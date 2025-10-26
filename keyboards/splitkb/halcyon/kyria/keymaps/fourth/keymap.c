@@ -1,12 +1,22 @@
 #include QMK_KEYBOARD_H
 #include "i18n.h"
 
-enum layers { BASE = 0, SYM, NAV, GAME, SETTING };
+enum layers {
+    BASE = 0,
+    SYM,
+    NAV,
+    GAME,
+    SETTING
+};
 
 // Tap Dance declarations
-enum { TD_LCBR_RCBR, TD_LPR_RPR, TD_LBRC_RBRC, TD_COMMA_LESS, TD_DOT_GRTR };
-
-// clang-format off
+enum {
+    TD_LCBR_RCBR,
+    TD_LPR_RPR,
+    TD_LBRC_RBRC,
+    TD_COMMA_LESS,
+    TD_DOT_GRTR
+};
 
 // Tap Dance definitions
 tap_dance_action_t tap_dance_actions[] = {
@@ -16,6 +26,8 @@ tap_dance_action_t tap_dance_actions[] = {
     [TD_COMMA_LESS] = ACTION_TAP_DANCE_DOUBLE(KC_COMMA, SE_LESS),
     [TD_DOT_GRTR]   = ACTION_TAP_DANCE_DOUBLE(KC_DOT, SE_GRTR),
 };
+
+// clang-format off
 
 //    ┌──────┬─────┬─────┬─────┬─────┬─────┐                               ┌─────┬──────┬─────┬─────┬─────┬─────┐
 //    │      │     │     │     │     │     │                               │     │      │     │     │     │     │
