@@ -1,12 +1,22 @@
 #include QMK_KEYBOARD_H
 #include "i18n.h"
 
-enum layers { BASE = 0, SYM, NAV, GAME, SETTING };
+enum layers {
+    BASE = 0,
+    SYM,
+    NAV,
+    GAME,
+    SETTING
+};
 
 // Tap Dance declarations
-enum { TD_LCBR_RCBR, TD_LPR_RPR, TD_LBRC_RBRC, TD_COMMA_LESS, TD_DOT_GRTR };
-
-// clang-format off
+enum {
+    TD_LCBR_RCBR,
+    TD_LPR_RPR,
+    TD_LBRC_RBRC,
+    TD_COMMA_LESS,
+    TD_DOT_GRTR
+};
 
 // Tap Dance definitions
 tap_dance_action_t tap_dance_actions[] = {
@@ -17,6 +27,23 @@ tap_dance_action_t tap_dance_actions[] = {
     [TD_DOT_GRTR]   = ACTION_TAP_DANCE_DOUBLE(KC_DOT, SE_GRTR),
 };
 
+#define _NAV MO(NAV)
+#define _GAME TG(GAME)
+#define _SET TG(SETTING)
+
+#define LGUI_A MT(MOD_LGUI, KC_A)
+#define LALT_S MT(MOD_LALT, KC_S)
+#define LCTL_D MT(MOD_LCTL, KC_D)
+#define LSFT_F MT(MOD_LSFT, KC_F)
+
+#define SYM_SPC LT(SYM, KC_SPACE)
+
+#define RGUI_J MT(MOD_RGUI, KC_J)
+#define RALT_K MT(MOD_RALT, KC_K)
+#define RCTL_L MT(MOD_RCTL, KC_L)
+#define RSFT_O MT(MOD_RSFT, SE_OSLH)
+#define NAV_A LT(NAV, SE_ADIA)
+
 // clang-format off
 // const char chordal_hold_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT(
 //   'L' , 'L' , 'L' , 'L' , 'L' , 'L' ,       'L' ,       'R' ,       'R' , 'R' , 'R' , 'R' , 'R' , 'R',
@@ -25,23 +52,6 @@ tap_dance_action_t tap_dance_actions[] = {
 //   'L' , 'L' , 'L' , 'L' , 'L' , 'L' , 'L' , 'L' ,       'R' , 'R' , 'R' , 'R' , 'R' , 'R' , 'R' , 'R',
 //                     'L' , 'L' , 'L' , 'L' , 'L' ,       'R' , 'R' , 'R' , 'R' , 'R'
 // );
-
-#define _NAV    MO(NAV)
-#define _GAME   TG(GAME)
-#define _SET    TG(SETTING)
-
-#define LGUI_A  MT(MOD_LGUI, KC_A)
-#define LALT_S  MT(MOD_LALT, KC_S)
-#define LCTL_D  MT(MOD_LCTL, KC_D)
-#define LSFT_F  MT(MOD_LSFT, KC_F)
-
-#define SYM_SPC LT(SYM, KC_SPACE)
-
-#define RGUI_J  MT(MOD_RGUI, KC_J)
-#define RALT_K  MT(MOD_RALT, KC_K)
-#define RCTL_L  MT(MOD_RCTL, KC_L)
-#define RSFT_O  MT(MOD_RSFT, SE_OSLH)
-#define NAV_A   LT(NAV, SE_ADIA)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //    ┌──────┬────────┬────────┬──────────────────┬────────────────┬──────────────────┐                                  ┌───────────────────┬─────────────────┬────────┬────────┬────────┬───────┐
