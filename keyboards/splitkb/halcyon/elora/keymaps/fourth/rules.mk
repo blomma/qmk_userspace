@@ -1,5 +1,5 @@
-# Include the display.c file during compilation
 SRC += display.c
+SRC += rgb.c
 
 ENCODER_MAP_ENABLE = no
 
