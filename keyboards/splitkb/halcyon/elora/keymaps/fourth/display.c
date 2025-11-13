@@ -13,22 +13,12 @@
 #include "../../../../../../users/halcyon_modules/splitkb/hlc_tft_display/graphics/numbers/undef.qgf.h"
 
 // All values (including hue) are scaled to 0-255
-#define HSV_SPLITKB 145, 235, 155
-#define HSV_CAPS_OFF 17, 104, 77
 #define HSV_CAPS_ON 17, 191, 245
-#define HSV_SCROLL_OFF 202, 104, 77
-#define HSV_SCROLL_ON 202, 191, 245
-#define HSV_NUM_OFF 142, 104, 77
-#define HSV_NUM_ON 142, 191, 245
-
 #define HSV_LAYER_0 0, 0, 160
-#define HSV_LAYER_3 0, 82, 255
 #define HSV_LAYER_1 23, 89, 255
 #define HSV_LAYER_2 43, 71, 255
+#define HSV_LAYER_3 0, 82, 255
 #define HSV_LAYER_4 77, 64, 255
-#define HSV_LAYER_6 131, 99, 255
-#define HSV_LAYER_7 154, 94, 255
-#define HSV_LAYER_5 176, 77, 255
 #define HSV_LAYER_UNDEF 0, 255, 255
 
 static const char *base    = "Base    ";
@@ -65,14 +55,6 @@ bool display_module_housekeeping_task_user(const bool second_display) {
         qp_drawtext_recolor(lcd_surface, 5, LCD_HEIGHT - Retron27->line_height - 5, Retron27, buf,
                             HSV_CAPS_ON, HSV_BLACK);
     }
-    // switch (get_highest_layer(layer_state | default_layer_state)) {
-    //     case 4:
-    //         snprintf(buf, sizeof(buf), "%i,%i", rgb_matrix_get_mode(), rgb_matrix_get_val());
-    //         qp_drawtext_recolor(lcd_surface, 5, LCD_HEIGHT - Retron27->line_height * 2 - 10,
-    //         Retron27, buf, HSV_CAPS_ON, HSV_BLACK); snprintf(buf, sizeof(buf), "%i",
-    //         rgb_matrix_get_speed()); qp_drawtext_recolor(lcd_surface, 5, LCD_HEIGHT -
-    //         Retron27->line_height - 5, Retron27, buf, HSV_CAPS_ON, HSV_BLACK); break;
-    // }
 
     if (previous_layer_state != layer_state || first_run_layer == false) {
         qp_clear(lcd_surface);
