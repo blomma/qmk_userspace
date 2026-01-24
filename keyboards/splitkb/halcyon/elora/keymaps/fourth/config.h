@@ -9,7 +9,7 @@
 
 // Configure the global tapping term (default: 200ms)
 #undef TAPPING_TERM
-#define TAPPING_TERM 150
+#define TAPPING_TERM 200
 
 // Recommended for Chordal hold
 #undef PERMISSIVE_HOLD
