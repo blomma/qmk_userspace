@@ -48,12 +48,15 @@ bool display_module_housekeeping_task_user(const bool second_display) {
     }
 
     if (get_highest_layer(layer_state | default_layer_state) == 4) {
-        snprintf(buf, sizeof(buf), "%i,%i", rgb_matrix_get_mode(), rgb_matrix_get_val());
-        qp_drawtext_recolor(lcd_surface, 5, LCD_HEIGHT - Retron27->line_height * 2 - 10, Retron27,
-                            buf, HSV_CAPS_ON, HSV_BLACK);
+        snprintf(buf, sizeof(buf), "%i,%i", rgb_matrix_get_mode(),
+                 rgb_matrix_get_val());
+        qp_drawtext_recolor(lcd_surface, 5,
+                            LCD_HEIGHT - Retron27->line_height * 2 - 10,
+                            Retron27, buf, HSV_CAPS_ON, HSV_BLACK);
         snprintf(buf, sizeof(buf), "%i", rgb_matrix_get_speed());
-        qp_drawtext_recolor(lcd_surface, 5, LCD_HEIGHT - Retron27->line_height - 5, Retron27, buf,
-                            HSV_CAPS_ON, HSV_BLACK);
+        qp_drawtext_recolor(lcd_surface, 5,
+                            LCD_HEIGHT - Retron27->line_height - 5, Retron27,
+                            buf, HSV_CAPS_ON, HSV_BLACK);
     }
 
     if (previous_layer_state != layer_state || first_run_layer == false) {
@@ -61,38 +64,49 @@ bool display_module_housekeeping_task_user(const bool second_display) {
 
         switch (get_highest_layer(layer_state | default_layer_state)) {
             case 0:
-                qp_drawtext_recolor(lcd_surface, 5, LCD_HEIGHT - Retron27->line_height * 3 - 10,
+                qp_drawtext_recolor(lcd_surface, 5,
+                                    LCD_HEIGHT - Retron27->line_height * 3 - 10,
                                     Retron27, base, HSV_CAPS_ON, HSV_BLACK);
                 layer_number = qp_load_image_mem(gfx_0);
-                qp_drawimage_recolor(lcd_surface, 5, 5, layer_number, HSV_LAYER_0, HSV_BLACK);
+                qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
+                                     HSV_LAYER_0, HSV_BLACK);
                 break;
             case 1:
-                qp_drawtext_recolor(lcd_surface, 5, LCD_HEIGHT - Retron27->line_height * 3 - 10,
+                qp_drawtext_recolor(lcd_surface, 5,
+                                    LCD_HEIGHT - Retron27->line_height * 3 - 10,
                                     Retron27, sym, HSV_CAPS_ON, HSV_BLACK);
                 layer_number = qp_load_image_mem(gfx_1);
-                qp_drawimage_recolor(lcd_surface, 5, 5, layer_number, HSV_LAYER_1, HSV_BLACK);
+                qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
+                                     HSV_LAYER_1, HSV_BLACK);
                 break;
             case 2:
-                qp_drawtext_recolor(lcd_surface, 5, LCD_HEIGHT - Retron27->line_height * 3 - 10,
+                qp_drawtext_recolor(lcd_surface, 5,
+                                    LCD_HEIGHT - Retron27->line_height * 3 - 10,
                                     Retron27, nav, HSV_CAPS_ON, HSV_BLACK);
                 layer_number = qp_load_image_mem(gfx_2);
-                qp_drawimage_recolor(lcd_surface, 5, 5, layer_number, HSV_LAYER_2, HSV_BLACK);
+                qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
+                                     HSV_LAYER_2, HSV_BLACK);
                 break;
             case 3:
-                qp_drawtext_recolor(lcd_surface, 5, LCD_HEIGHT - Retron27->line_height * 3 - 10,
+                qp_drawtext_recolor(lcd_surface, 5,
+                                    LCD_HEIGHT - Retron27->line_height * 3 - 10,
                                     Retron27, game, HSV_CAPS_ON, HSV_BLACK);
                 layer_number = qp_load_image_mem(gfx_3);
-                qp_drawimage_recolor(lcd_surface, 5, 5, layer_number, HSV_LAYER_3, HSV_BLACK);
+                qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
+                                     HSV_LAYER_3, HSV_BLACK);
                 break;
             case 4:
-                qp_drawtext_recolor(lcd_surface, 5, LCD_HEIGHT - Retron27->line_height * 3 - 10,
+                qp_drawtext_recolor(lcd_surface, 5,
+                                    LCD_HEIGHT - Retron27->line_height * 3 - 10,
                                     Retron27, setting, HSV_CAPS_ON, HSV_BLACK);
                 layer_number = qp_load_image_mem(gfx_4);
-                qp_drawimage_recolor(lcd_surface, 5, 5, layer_number, HSV_LAYER_4, HSV_BLACK);
+                qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
+                                     HSV_LAYER_4, HSV_BLACK);
                 break;
             default:
                 layer_number = qp_load_image_mem(gfx_undef);
-                qp_drawimage_recolor(lcd_surface, 5, 5, layer_number, HSV_LAYER_UNDEF, HSV_BLACK);
+                qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
+                                     HSV_LAYER_UNDEF, HSV_BLACK);
         }
 
         qp_close_image(layer_number);
