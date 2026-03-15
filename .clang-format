@@ -14,7 +14,7 @@ AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: "false"
 BinPackArguments: "true"
 BinPackParameters: "true"
-ColumnLimit: "100"
+ColumnLimit: "80"
 IndentCaseLabels: "true"
 IndentPPDirectives: AfterHash
 IndentWidth: "4"

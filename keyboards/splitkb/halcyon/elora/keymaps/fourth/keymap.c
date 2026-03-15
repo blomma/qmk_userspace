@@ -36,6 +36,10 @@ tap_dance_action_t tap_dance_actions[] = {
 //                     'L' , 'L' , 'L' , 'L' , 'L' ,       'R' , 'R' , 'R' , 'R' , 'R'
 // );
 
+// There is an extra row added for the Halcyon modules. Currently only the Encoder module is
+// supported but we reserve 5 keys per half for future expansion. Your personal keymap will also
+// need to be updated to include this row, and the `LAYOUT` macro will need to be updated to
+// `LAYOUT_elora_hlc` in order to compile.
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //    ┌─────────┬───────────┬───────────┬──────────────────┬────────────────┬──────────────────┐                                                 ┌───────────────────┬─────────────────┬───────────┬───────────┬───────────┬────────────┐
 //    │   esc   │     1     │     2     │        3         │       4        │        5         │                                                 │         6         │        7        │     8     │     9     │     0     │    bspc    │
