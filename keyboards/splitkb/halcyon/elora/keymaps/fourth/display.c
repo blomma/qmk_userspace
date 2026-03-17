@@ -30,7 +30,7 @@ layer_state_t previous_layer_state = {0};
 
 char buf[64] = {0};
 
-int b_color_value = 0;
+int cell_color_value = 0;
 #define GRID_WIDTH 27
 #define GRID_HEIGHT 48
 #define CELL_SIZE 4 // Cell size excluding outline
@@ -39,154 +39,233 @@ int b_color_value = 0;
 // Define the probability factor for initial alive cells
 #define INITIAL_ALIVE_PROBABILITY 0.2 // 20% chance of being alive
 
-bool grid[GRID_HEIGHT][GRID_WIDTH];         // Current state
-bool new_grid[GRID_HEIGHT][GRID_WIDTH];     // Next state
-bool changed_grid[GRID_HEIGHT][GRID_WIDTH]; // Tracks changed cells
+// Game of Life State: Bit-packed for Memory and Speed
+// Each uint32_t represents a row where each bit (0-26) is a cell (1=Alive,
+// 0=Dead). This reduces memory from 3888 bytes (bool[48][27]) to 576 bytes
+// (uint32_t[48] * 3).
+//
+// Technical Note on Bit-Masking (1UL << x):
+// 1. (1UL << x) creates a bitmask with only the x-th bit set.
+// 2. We use '1UL' (Unsigned Long) to ensure the literal is at least 32 bits
+// wide.
+//    Using a standard '1' (signed int) can lead to Undefined Behavior if
+//    shifting into the sign bit (bit 31), though our GRID_WIDTH is only 27.
+// 3. Bitwise operations (&, |, ^, ~) allow us to check, set, flip, or clear
+// cells
+//    without the overhead of array indexing and boolean branching.
+static uint32_t grid1[GRID_HEIGHT]; // Grid state A
+static uint32_t grid2[GRID_HEIGHT]; // Grid state B
 
-uint32_t b_get_random_32bit(void) {
-    uint32_t random_value = 0;
-    for (int i = 0; i < 32; i++) {
-        wait_ms(1);
-        random_value = (random_value << 1) | (rosc_hw->randombit & 1);
-    }
-    return random_value;
+// Pointer Swapping Optimization: Instead of copying new_grid to grid every
+// frame, we simply swap these pointers. This eliminates 1,296 memory
+// assignments per frame.
+static uint32_t *p_grid     = grid1; // Pointer to current state
+static uint32_t *p_new_grid = grid2; // Pointer to next state
+
+// Change Detection Optimization: A bit-packed mask of cells that changed state.
+// If a bit is 1, the cell flipped (Alive<->Dead). If 0, it stayed the same.
+static uint32_t changed_grid[GRID_HEIGHT]; // Tracks changed cells (bit-packed)
+
+// Seeding Optimization: Instead of waiting 32ms (32 * wait_ms(1)) to harvest
+// entropy from the ROsc (Ring Oscillator), we use the system timer.
+// timer_read32() provides the milliseconds since boot, which is highly variable
+// depending on exactly when the user powers on or interacts with the board.
+uint32_t get_random_seed(void) {
+    return timer_read32() ^ rosc_hw->randombit;
 }
 
-void b_init_grid() {
+void init_game_of_life_grid(void) {
     // Initialize grid with alive cells
     for (int y = 0; y < GRID_HEIGHT; y++) {
+        p_grid[y] = 0;
         for (int x = 0; x < GRID_WIDTH; x++) {
-            grid[y][x]         = (rand() < INITIAL_ALIVE_PROBABILITY *
-                                       RAND_MAX); // Use probability factor
-            changed_grid[y][x] = true; // Mark all as changed initially
+            if (rand() < INITIAL_ALIVE_PROBABILITY * RAND_MAX) {
+                p_grid[y] |= (1UL << x);
+            }
         }
+        // Force all cells to 'changed' so the first draw fills the screen
+        changed_grid[y] = 0xFFFFFFFF; // Mark all as changed initially
     }
 }
 
-void b_draw_grid() {
-    uint8_t hue      = 0; // Hue for alive cells
-    uint8_t sat      = 0; // Saturation for alive cells
-    uint8_t val_dead = 0; // Brightness for dead cells
+/**
+ * Maps the color index to specific HSV values defined in display.h.
+ * Moving this to a helper allows the draw loop to calculate color ONCE per
+ * frame instead of per-cell.
+ */
+static void get_hsv_color(int index, uint8_t *h, uint8_t *s, uint8_t *v) {
+    switch (index) {
+        case 0:
+            *h = 0;
+            *s = 0;
+            *v = 160;
+            break; // HSV_LAYER_0
+        case 1:
+            *h = 23;
+            *s = 89;
+            *v = 255;
+            break; // HSV_LAYER_1
+        case 2:
+            *h = 43;
+            *s = 71;
+            *v = 255;
+            break; // HSV_LAYER_2
+        case 3:
+            *h = 0;
+            *s = 82;
+            *v = 255;
+            break; // HSV_LAYER_3
+        case 4:
+            *h = 77;
+            *s = 64;
+            *v = 255;
+            break; // HSV_LAYER_4
+        case 5:
+            *h = 176;
+            *s = 77;
+            *v = 255;
+            break; // HSV_LAYER_5
+        case 6:
+            *h = 131;
+            *s = 99;
+            *v = 255;
+            break; // HSV_LAYER_6
+        case 7:
+            *h = 154;
+            *s = 94;
+            *v = 255;
+            break; // HSV_LAYER_7
+        default:
+            *h = 0;
+            *s = 255;
+            *v = 255;
+            break; // HSV_LAYER_UNDEF
+    }
+}
+
+void draw_game_of_life_grid(void) {
+    uint8_t h, s, v;
+    get_hsv_color(cell_color_value, &h, &s, &v);
 
     for (int y = 0; y < GRID_HEIGHT; y++) {
+        uint32_t changed = changed_grid[y];
+
+        // Row-Skipping Optimization: If no cells in this row changed since the
+        // last generation, we skip the entire row. This is the single biggest
+        // draw-time saver.
+        if (changed == 0) continue; // Skip unchanged rows
+
+        uint32_t current_row = p_grid[y];
+        uint16_t top         = y * (CELL_SIZE + OUTLINE_SIZE);
+        uint16_t bottom      = top + CELL_SIZE + OUTLINE_SIZE;
+
         for (int x = 0; x < GRID_WIDTH; x++) {
-            if (changed_grid[y][x]) { // Only update changed cells
-                uint16_t left   = x * (CELL_SIZE + OUTLINE_SIZE);
-                uint16_t top    = y * (CELL_SIZE + OUTLINE_SIZE);
-                uint16_t right  = left + CELL_SIZE + OUTLINE_SIZE;
-                uint16_t bottom = top + CELL_SIZE + OUTLINE_SIZE;
+            // Only draw cells that have actually flipped state
+            if (changed & (1UL << x)) {
+                uint16_t left  = x * (CELL_SIZE + OUTLINE_SIZE);
+                uint16_t right = left + CELL_SIZE + OUTLINE_SIZE;
 
-                // Draw the outline
-                qp_rect(lcd_surface, left, top, right, bottom, hue, sat,
-                        val_dead, true);
-
-                // Draw the filled cell inside the outline if it's alive
-                if (grid[y][x]) {
-                    switch (b_color_value) {
-                        case 0:
-                            qp_rect(lcd_surface, left + OUTLINE_SIZE,
-                                    top + OUTLINE_SIZE, right - OUTLINE_SIZE,
-                                    bottom - OUTLINE_SIZE, HSV_LAYER_0, true);
-                            break;
-                        case 1:
-                            qp_rect(lcd_surface, left + OUTLINE_SIZE,
-                                    top + OUTLINE_SIZE, right - OUTLINE_SIZE,
-                                    bottom - OUTLINE_SIZE, HSV_LAYER_1, true);
-                            break;
-                        case 2:
-                            qp_rect(lcd_surface, left + OUTLINE_SIZE,
-                                    top + OUTLINE_SIZE, right - OUTLINE_SIZE,
-                                    bottom - OUTLINE_SIZE, HSV_LAYER_2, true);
-                            break;
-                        case 3:
-                            qp_rect(lcd_surface, left + OUTLINE_SIZE,
-                                    top + OUTLINE_SIZE, right - OUTLINE_SIZE,
-                                    bottom - OUTLINE_SIZE, HSV_LAYER_3, true);
-                            break;
-                        case 4:
-                            qp_rect(lcd_surface, left + OUTLINE_SIZE,
-                                    top + OUTLINE_SIZE, right - OUTLINE_SIZE,
-                                    bottom - OUTLINE_SIZE, HSV_LAYER_4, true);
-                            break;
-                        case 5:
-                            qp_rect(lcd_surface, left + OUTLINE_SIZE,
-                                    top + OUTLINE_SIZE, right - OUTLINE_SIZE,
-                                    bottom - OUTLINE_SIZE, HSV_LAYER_5, true);
-                            break;
-                        case 6:
-                            qp_rect(lcd_surface, left + OUTLINE_SIZE,
-                                    top + OUTLINE_SIZE, right - OUTLINE_SIZE,
-                                    bottom - OUTLINE_SIZE, HSV_LAYER_6, true);
-                            break;
-                        case 7:
-                            qp_rect(lcd_surface, left + OUTLINE_SIZE,
-                                    top + OUTLINE_SIZE, right - OUTLINE_SIZE,
-                                    bottom - OUTLINE_SIZE, HSV_LAYER_7, true);
-                            break;
-                        default:
-                            qp_rect(lcd_surface, left + OUTLINE_SIZE,
-                                    top + OUTLINE_SIZE, right - OUTLINE_SIZE,
-                                    bottom - OUTLINE_SIZE, HSV_LAYER_UNDEF,
-                                    true);
-                    }
+                if (current_row & (1UL << x)) {
+                    // Cell became ALIVE:
+                    // 1. Draw black background (outline)
+                    // 2. Draw the colored 'alive' square
+                    qp_rect(lcd_surface, left, top, right, bottom, 0, 0, 0,
+                            true);
+                    qp_rect(lcd_surface, left + OUTLINE_SIZE,
+                            top + OUTLINE_SIZE, right - OUTLINE_SIZE,
+                            bottom - OUTLINE_SIZE, h, s, v, true);
+                } else {
+                    // Cell became DEAD:
+                    // Just draw the black background to "erase" the previous
+                    // alive color.
+                    qp_rect(lcd_surface, left, top, right, bottom, 0, 0, 0,
+                            true);
                 }
             }
         }
     }
 }
 
-void b_update_grid() {
+void update_game_of_life_grid(void) {
     for (int y = 0; y < GRID_HEIGHT; y++) {
+        uint32_t next_row = 0;
+
+        // Row Caching: Get row pointers once per line to avoid repeated array
+        // access
+        uint32_t row_above = (y > 0) ? p_grid[y - 1] : 0;
+        uint32_t row_curr  = p_grid[y];
+        uint32_t row_below = (y < GRID_HEIGHT - 1) ? p_grid[y + 1] : 0;
+
         for (int x = 0; x < GRID_WIDTH; x++) {
             int alive_neighbors = 0;
 
-            // Count alive neighbors
-            for (int dy = -1; dy <= 1; dy++) {
-                for (int dx = -1; dx <= 1; dx++) {
-                    if (dy == 0 && dx == 0) continue; // Skip the current cell
-                    int ny = y + dy;
-                    int nx = x + dx;
-                    if (ny >= 0 && ny < GRID_HEIGHT && nx >= 0 &&
-                        nx < GRID_WIDTH) {
-                        alive_neighbors += grid[ny][nx];
-                    }
-                }
+            // Neighbor Counting via Bit-Shifting:
+            // Instead of nested loops with 'if' boundary checks, we use direct
+            // bit-masking on the cached rows. This is significantly faster on
+            // MCU.
+
+            // Neighbors above
+            if (row_above) {
+                if (x > 0 && (row_above & (1UL << (x - 1)))) alive_neighbors++;
+                if (row_above & (1UL << x)) alive_neighbors++;
+                if (x < GRID_WIDTH - 1 && (row_above & (1UL << (x + 1))))
+                    alive_neighbors++;
             }
 
-            // Apply the rules of the Game of Life
-            if (grid[y][x]) {
-                // Any live cell with two or three live neighbours survives.
-                new_grid[y][x] = (alive_neighbors == 2 || alive_neighbors == 3);
+            // Neighbors same row
+            if (x > 0 && (row_curr & (1UL << (x - 1)))) alive_neighbors++;
+            if (x < GRID_WIDTH - 1 && (row_curr & (1UL << (x + 1))))
+                alive_neighbors++;
+
+            // Neighbors below
+            if (row_below) {
+                if (x > 0 && (row_below & (1UL << (x - 1)))) alive_neighbors++;
+                if (row_below & (1UL << x)) alive_neighbors++;
+                if (x < GRID_WIDTH - 1 && (row_below & (1UL << (x + 1))))
+                    alive_neighbors++;
+            }
+
+            // Conway's Rules
+            bool current = (row_curr & (1UL << x));
+            if (current) {
+                // Survival: 2 or 3 neighbors
+                if (alive_neighbors == 2 || alive_neighbors == 3)
+                    next_row |= (1UL << x);
             } else {
-                // Any dead cell with exactly three live neighbours becomes a
-                // live cell.
-                new_grid[y][x] = (alive_neighbors == 3);
+                // Birth: exactly 3 neighbors
+                if (alive_neighbors == 3) next_row |= (1UL << x);
             }
-
-            // Track changed cells
-            changed_grid[y][x] = (grid[y][x] != new_grid[y][x]);
         }
+
+        p_new_grid[y] = next_row;
+
+        // Bitwise XOR Optimization:
+        // Identifying which cells changed state (flipped bits) is a single XOR
+        // operation. This 'changed_grid' is then used by the draw function to
+        // skip static cells.
+        changed_grid[y] = row_curr ^ next_row;
     }
 
-    // Copy new grid state to current grid
-    for (int y = 0; y < GRID_HEIGHT; y++) {
-        for (int x = 0; x < GRID_WIDTH; x++) {
-            grid[y][x] = new_grid[y][x];
-        }
-    }
+    // Pointer Swap: Move to the next generation instantly
+    uint32_t *tmp = p_grid;
+    p_grid        = p_new_grid;
+    p_new_grid    = tmp;
 }
 
 // Function to add a cluster of cells at a random position
-void b_add_cell_cluster() {
-    int cluster_size = 3; // Size of the cluster (3x3)
+void add_cell_cluster_to_game_of_life_grid(void) {
+    int cluster_size = 3;
     int x            = rand() % (GRID_WIDTH - cluster_size);
     int y            = rand() % (GRID_HEIGHT - cluster_size);
 
     for (int dy = 0; dy < cluster_size; dy++) {
         for (int dx = 0; dx < cluster_size; dx++) {
-            bool is_alive = rand() % 2; // Randomly choose between 0 and 1
-            grid[y + dy][x + dx]         = is_alive; // Set the cell to be alive
-            changed_grid[y + dy][x + dx] = true;     // Mark the cell as changed
+            if (rand() % 2) {
+                p_grid[y + dy] |= (1UL << (x + dx));
+            } else {
+                p_grid[y + dy] &= ~(1UL << (x + dx));
+            }
+            changed_grid[y + dy] |= (1UL << (x + dx));
         }
     }
 }
@@ -198,19 +277,19 @@ bool display_module_housekeeping_task_user(const bool second_display) {
         static uint32_t previous_matrix_activity_time = 0;
 
         if (!second_display_set) {
-            srand(b_get_random_32bit());
-            b_init_grid();
-            b_color_value      = rand() % 8;
+            srand(get_random_seed());
+            init_game_of_life_grid();
+            cell_color_value   = rand() % 8;
             second_display_set = true;
         }
 
-        if (timer_elapsed32(last_draw) >= 100) { // Throttle to 10 fps
-            b_draw_grid();
-            b_update_grid();
+        if (timer_elapsed32(last_draw) >= 200) { // Throttle to 10 fps
+            draw_game_of_life_grid();
+            update_game_of_life_grid();
 
             if (previous_matrix_activity_time != last_matrix_activity_time()) {
-                b_color_value = rand() % 8;
-                b_add_cell_cluster();
+                cell_color_value = rand() % 8;
+                add_cell_cluster_to_game_of_life_grid();
                 previous_matrix_activity_time = last_matrix_activity_time();
             }
 

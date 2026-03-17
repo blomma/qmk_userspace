@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include <stdint.h>
-
 // All values (including hue) are scaled to 0-255
 #define HSV_CAPS_ON 17, 191, 245
 #define HSV_LAYER_0 0, 0, 160
@@ -18,8 +16,7 @@
 #define HSV_LAYER_7 154, 94, 255
 #define HSV_LAYER_5 176, 77, 255
 
-void    b_draw_grid(void);
-void    b_update_grid(void);
-void    b_init_grid(void);
-void    b_add_cell_cluster(void);
-uint8_t b_get_random_color_index(void);
+void draw_game_of_life_grid(void);
+void update_game_of_life_grid(void);
+void init_game_of_life_grid(void);
+void add_cell_cluster_to_game_of_life_grid(void);
