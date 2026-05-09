@@ -63,26 +63,26 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   KC_NO   , KC_NO        , KC_NO        , KC_NO            , KC_NO          ,                                                                                                    KC_NO           , KC_NO        , KC_NO        , KC_NO           , KC_NO
 ),
 
-//    ┌─────┬─────┬─────┬─────┬─────┬─────┐                           ┌─────┬─────┬─────┬─────┬─────┬─────┐
-//    │     │     │     │     │     │     │                           │     │     │     │     │     │     │
-//    ├─────┼─────┼─────┼─────┼─────┼─────┤                           ├─────┼─────┼─────┼─────┼─────┼─────┤
-//    │     │     │     │     │     │     │                           │  +  │  {  │  }  │  ´  │  \  │     │
-//    ├─────┼─────┼─────┼─────┼─────┼─────┤                           ├─────┼─────┼─────┼─────┼─────┼─────┤
-//    │     │     │     │     │     │     │                           │  ~  │  (  │  )  │  ^  │  <  │     │
-//    ├─────┼─────┼─────┼─────┼─────┼─────┼─────┬─────┐   ┌─────┬─────┼─────┼─────┼─────┼─────┼─────┼─────┤
-//    │     │     │     │     │     │     │     │     │   │     │     │  -  │  [  │  ]  │  '  │     │     │
-//    └─────┴─────┴─────┼─────┼─────┼─────┼─────┼─────┤   ├─────┼─────┼─────┼─────┼─────┼─────┴─────┴─────┘
+//    ┌─────┬─────┬─────┬─────┬─────┬─────┐                           ┌─────┬─────┬─────┬─────┬───────┬─────┐
+//    │     │     │     │     │     │     │                           │     │     │     │     │       │     │
+//    ├─────┼─────┼─────┼─────┼─────┼─────┤                           ├─────┼─────┼─────┼─────┼───────┼─────┤
+//    │     │     │     │     │     │     │                           │  +  │  {  │  }  │  ´  │   \   │     │
+//    ├─────┼─────┼─────┼─────┼─────┼─────┤                           ├─────┼─────┼─────┼─────┼───────┼─────┤
+//    │     │     │     │     │     │     │                           │  ~  │  (  │  )  │  ^  │   <   │     │
+//    ├─────┼─────┼─────┼─────┼─────┼─────┼─────┬─────┐   ┌─────┬─────┼─────┼─────┼─────┼─────┼───────┼─────┤
+//    │     │     │     │     │     │     │     │     │   │     │     │  -  │  [  │  ]  │  '  │ <_MAC │     │
+//    └─────┴─────┴─────┼─────┼─────┼─────┼─────┼─────┤   ├─────┼─────┼─────┼─────┼─────┼─────┴───────┴─────┘
 //                      │     │     │     │     │     │   │     │     │     │     │     │
-//    ┌─────┬─────┬─────┼─────┼─────┼─────┴─────┴─────┘   └─────┴─────┴─────┼─────┼─────┼─────┬─────┬─────┐
-//    │ no  │ no  │ no  │ no  │ no  │                                       │ no  │ no  │ no  │ no  │ no  │
-//    └─────┴─────┴─────┴─────┴─────┘                                       └─────┴─────┴─────┴─────┴─────┘
+//    ┌─────┬─────┬─────┼─────┼─────┼─────┴─────┴─────┘   └─────┴─────┴─────┼─────┼─────┼─────┬───────┬─────┐
+//    │ no  │ no  │ no  │ no  │ no  │                                       │ no  │ no  │ no  │  no   │ no  │
+//    └─────┴─────┴─────┴─────┴─────┘                                       └─────┴─────┴─────┴───────┴─────┘
 [SYM] = LAYOUT_elora_hlc(
-  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             KC_TRNS , KC_TRNS     , KC_TRNS     , KC_TRNS , KC_TRNS , KC_TRNS,
-  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             SE_PLUS , SE_LCBR_MAC , SE_RCBR_MAC , SE_ACUT , SE_BSLS , KC_TRNS,
-  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             SE_TILD , SE_LPRN     , SE_RPRN     , SE_CIRC , SE_LESS , KC_TRNS,
-  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , SE_MINS , SE_LBRC     , SE_RBRC     , SE_APOS , KC_TRNS , KC_TRNS,
-                                KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS     , KC_TRNS                                  ,
-  KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO   ,                                                                 KC_NO       , KC_NO       , KC_NO   , KC_NO   , KC_NO
+  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             KC_TRNS , KC_TRNS     , KC_TRNS     , KC_TRNS , KC_TRNS     , KC_TRNS,
+  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             SE_PLUS , SE_LCBR_MAC , SE_RCBR_MAC , SE_ACUT , SE_BSLS     , KC_TRNS,
+  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             SE_TILD , SE_LPRN     , SE_RPRN     , SE_CIRC , SE_LESS     , KC_TRNS,
+  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , SE_MINS , SE_LBRC     , SE_RBRC     , SE_APOS , SE_LESS_MAC , KC_TRNS,
+                                KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS     , KC_TRNS                                      ,
+  KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO   ,                                                                 KC_NO       , KC_NO       , KC_NO   , KC_NO       , KC_NO
 ),
 
 //    ┌─────┬─────┬─────┬─────┬─────┬─────┐                           ┌──────┬──────┬─────────┬──────┬─────┬─────┐
