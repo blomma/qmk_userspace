@@ -20,3 +20,4 @@
 #define SE_BSLS ALGR(KC_MINS)
 #define SE_BSLS_MAC S(ALGR(KC_7))
 #define SE_TILD ALGR(KC_RBRC)
+#define SE_LESS_MAC KC_GRV
