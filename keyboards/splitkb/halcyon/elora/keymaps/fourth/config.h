@@ -13,10 +13,10 @@
 
 // Recommended for Chordal hold
 #undef PERMISSIVE_HOLD
-#define PERMISSIVE_HOLD
+// #define PERMISSIVE_HOLD
 
 #undef CHORDAL_HOLD
-#define CHORDAL_HOLD
+// #define CHORDAL_HOLD
 
 #undef FLOW_TAP_TERM
 // #define FLOW_TAP_TERM 150
