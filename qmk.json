@@ -9,14 +9,6 @@
             }
         ],
         [
-            "splitkb/halcyon/kyria/rev4",
-            "fourth",
-            {
-                "HLC_TFT_DISPLAY": "1",
-                "TARGET": "splitkb_halcyon_kyria_rev4_fourth"
-            }
-        ],
-        [
             "splitkb/halcyon/elora/rev2",
             "fourth",
             {
