@@ -3,6 +3,9 @@
 // Myriad boilerplate
 #undef MYRIAD_ENABLE
 
+#undef OLED_TIMEOUT
+#define OLED_TIMEOUT 60000
+
 #undef RGB_MATRIX_TIMEOUT
 #define RGB_MATRIX_TIMEOUT 180000
 

@@ -192,18 +192,6 @@ void oled_render_animation_phase(void) {
 }
 
 bool oled_task_user(void) {
-    bool is_oled_enabled = last_input_activity_elapsed() < 60000;
-
-    if (!is_oled_enabled) {
-        oled_off();
-
-        return false;
-    }
-
-    if (!is_oled_on()) {
-        oled_on();
-    }
-
     if (is_keyboard_master()) {
         oled_render_animation_phase();
     } else {
