@@ -136,21 +136,3 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 // clang-format on
-
-#if defined(HALCYON_ENABLE)
-const uint16_t left_halcyon_buttons[10][5] = {
-    [BASE]    = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
-    [SYM]     = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
-    [NAV]     = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
-    [GAME]    = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
-    [SETTING] = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
-};
-
-const uint16_t right_halcyon_buttons[10][5] = {
-    [BASE]    = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
-    [SYM]     = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
-    [NAV]     = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
-    [GAME]    = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
-    [SETTING] = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
-};
-#endif
