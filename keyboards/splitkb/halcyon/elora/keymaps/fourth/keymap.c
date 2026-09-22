@@ -37,10 +37,7 @@ tap_dance_action_t tap_dance_actions[] = {
 //                     'L' , 'L' , 'L' , 'L' , 'L' ,       'R' , 'R' , 'R' , 'R' , 'R'
 // );
 
-// There is an extra row added for the Halcyon modules. Currently only the Encoder module is
-// supported but we reserve 5 keys per half for future expansion. Your personal keymap will also
-// need to be updated to include this row, and the `LAYOUT` macro will need to be updated to
-// `LAYOUT_elora_hlc` in order to compile.
+// Halcyon module buttons are mapped separately from the keyboard layout below.
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //    ┌─────────┬───────────┬───────────┬──────────────────┬────────────────┬──────────────────┐                                                 ┌───────────────────┬─────────────────┬───────────┬───────────┬─────────────────┬────────────┐
 //    │   esc   │     1     │     2     │        3         │       4        │        5         │                                                 │         6         │        7        │     8     │     9     │        0        │    bspc    │
@@ -55,13 +52,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //    ┌─────────┬───────────┬───────────┼──────────────────┼────────────────┼──────────────────┴──────────────┴─────────────┘   └──────────┴─────┴───────────────────┼─────────────────┼───────────┼───────────┬─────────────────┬────────────┐
 //    │   no    │    no     │    no     │        no        │       no       │                                                                                        │       no        │    no     │    no     │       no        │     no     │
 //    └─────────┴───────────┴───────────┴──────────────────┴────────────────┘                                                                                        └─────────────────┴───────────┴───────────┴─────────────────┴────────────┘
-[BASE] = LAYOUT_elora_hlc(
+[BASE] = LAYOUT(
   KC_ESC  , KC_1         , KC_2         , KC_3             , KC_4           , KC_5             ,                                                             KC_6              , KC_7            , KC_8         , KC_9         , KC_0            , KC_BSPC         ,
   KC_TAB  , KC_Q         , KC_W         , KC_E             , KC_R           , KC_T             ,                                                             KC_Y              , KC_U            , KC_I         , KC_O         , KC_P            , SE_ARNG         ,
   MO(NAV) , LGUI_T(KC_A) , LALT_T(KC_S) , LCTL_T(KC_D)     , LSFT_T(KC_F)   , KC_G             ,                                                             KC_H              , RGUI_T(KC_J)    , RALT_T(KC_K) , RCTL_T(KC_L) , RSFT_T(SE_ODIA) , LT(NAV, SE_ADIA),
   KC_TRNS , KC_Z         , KC_X         , KC_C             , KC_V           , KC_B             , KC_TRNS           , TG(SETTING) ,     TG(GAME) , KC_TRNS  , KC_N              , KC_M            , KC_COMMA     , KC_DOT       , KC_TRNS         , KC_TRNS         ,
-                                          TD(TD_LCBR_RCBR) , TD(TD_LPR_RPR) , TD(TD_LBRC_RBRC) , LT(SYM, KC_SPACE) , KC_TRNS     ,     KC_TRNS  , KC_ENTER , TD(TD_COMMA_LESS) , TD(TD_DOT_GRTR) , KC_TRNS                                                         ,
-  KC_NO   , KC_NO        , KC_NO        , KC_NO            , KC_NO          ,                                                                                                    KC_NO           , KC_NO        , KC_NO        , KC_NO           , KC_NO
+                                          TD(TD_LCBR_RCBR) , TD(TD_LPR_RPR) , TD(TD_LBRC_RBRC) , LT(SYM, KC_SPACE) , KC_TRNS     ,     KC_TRNS  , KC_ENTER , TD(TD_COMMA_LESS) , TD(TD_DOT_GRTR) , KC_TRNS
 ),
 
 //    ┌─────┬─────┬─────┬─────┬─────┬─────┐                           ┌─────┬─────┬─────┬─────────┬─────────┬─────┐
@@ -77,13 +73,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //    ┌─────┬─────┬─────┼─────┼─────┼─────┴─────┴─────┘   └─────┴─────┴─────┼─────┼─────┼─────────┬─────────┬─────┐
 //    │ no  │ no  │ no  │ no  │ no  │                                       │ no  │ no  │   no    │   no    │ no  │
 //    └─────┴─────┴─────┴─────┴─────┘                                       └─────┴─────┴─────────┴─────────┴─────┘
-[SYM] = LAYOUT_elora_hlc(
+[SYM] = LAYOUT(
   KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             KC_TRNS , KC_TRNS     , KC_TRNS     , KC_TRNS , KC_TRNS     , KC_TRNS,
   KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             SE_PLUS , SE_LCBR_MAC , SE_RCBR_MAC , SE_ACUT , SE_BSLS     , KC_TRNS,
   KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             SE_TILD , SE_LPRN     , SE_RPRN     , SE_CIRC , SE_LESS_MAC , KC_TRNS,
   KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , SE_MINS , SE_LBRC     , SE_RBRC     , SE_QUOT , SE_PIPE     , KC_TRNS,
-                                KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS     , KC_TRNS                                      ,
-  KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO   ,                                                                 KC_NO       , KC_NO       , KC_NO   , KC_NO       , KC_NO
+                                KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS     , KC_TRNS
 ),
 
 //    ┌─────┬─────┬─────┬─────┬─────┬─────┐                           ┌──────┬──────┬─────────┬──────┬─────┬─────┐
@@ -99,13 +94,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //    ┌─────┬─────┬─────┼─────┼─────┼─────┴─────┴─────┘   └─────┴─────┴──────┼──────┼─────────┼──────┬─────┬─────┐
 //    │ no  │ no  │ no  │ no  │ no  │                                        │  no  │   no    │  no  │ no  │ no  │
 //    └─────┴─────┴─────┴─────┴─────┘                                        └──────┴─────────┴──────┴─────┴─────┘
-[NAV] = LAYOUT_elora_hlc(
+[NAV] = LAYOUT(
   KC_F1   , KC_F2   , KC_F3   , KC_F4   , KC_F5   , KC_F6   ,                                             KC_F7   , KC_F8   , KC_F9      , KC_F10   , KC_F11  , KC_F12 ,
   KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             KC_HOME , KC_PGDN , KC_PAGE_UP , KC_END   , KC_TRNS , KC_TRNS,
   KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             KC_LEFT , KC_DOWN , KC_UP      , KC_RIGHT , KC_TRNS , KC_TRNS,
   KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS    , KC_TRNS  , KC_TRNS , KC_TRNS,
-                                KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS                                  ,
-  KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO   ,                                                                 KC_NO   , KC_NO      , KC_NO    , KC_NO   , KC_NO
+                                KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS
 ),
 
 //    ┌─────┬─────┬─────┬──────┬──────┬──────┐                           ┌─────┬─────┬─────┬─────┬─────┬─────┐
@@ -121,13 +115,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //    ┌─────┬─────┬─────┼──────┼──────┼──────┴─────┴─────┘   └─────┴─────┴─────┼─────┼─────┼─────┬─────┬─────┐
 //    │ no  │ no  │ no  │  no  │  no  │                                        │ no  │ no  │ no  │ no  │ no  │
 //    └─────┴─────┴─────┴──────┴──────┘                                        └─────┴─────┴─────┴─────┴─────┘
-[GAME] = LAYOUT_elora_hlc(
+[GAME] = LAYOUT(
   KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                              KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS,
   KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                              KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS,
   KC_TRNS , KC_A    , KC_S    , KC_D    , KC_F    , KC_TRNS ,                                              KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS,
   KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS  , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS,
-                                KC_LALT , KC_LCTL , KC_LSFT , KC_SPACE , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS                              ,
-  KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO   ,                                                                  KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO
+                                KC_LALT , KC_LCTL , KC_LSFT , KC_SPACE , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS
 ),
 
 //    ┌─────────────────────────────┬─────────────────────────┬─────┬─────┬─────┬─────┐                           ┌─────┬─────┬─────┬─────┬─────┬─────┐
@@ -143,14 +136,31 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //    ┌─────────────────────────────┬─────────────────────────┬─────┼─────┼─────┼─────┴─────┴─────┘   └─────┴─────┴─────┼─────┼─────┼─────┬─────┬─────┐
 //    │             no              │           no            │ no  │ no  │ no  │                                       │ no  │ no  │ no  │ no  │ no  │
 //    └─────────────────────────────┴─────────────────────────┴─────┴─────┴─────┘                                       └─────┴─────┴─────┴─────┴─────┘
-[SETTING] = LAYOUT_elora_hlc(
+[SETTING] = LAYOUT(
   QK_BOOT                     , KC_TRNS                 , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS,
   QK_RGB_MATRIX_MODE_PREVIOUS , QK_RGB_MATRIX_MODE_NEXT , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS,
   QK_RGB_MATRIX_VALUE_DOWN    , QK_RGB_MATRIX_VALUE_UP  , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS,
   QK_RGB_MATRIX_SPEED_DOWN    , QK_RGB_MATRIX_SPEED_UP  , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS,
-                                                                    KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS                              ,
-  KC_NO                       , KC_NO                   , KC_NO   , KC_NO   , KC_NO   ,                                                                 KC_NO   , KC_NO   , KC_NO   , KC_NO   , KC_NO
+                                                                    KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS
 )
 };
 
 // clang-format on
+
+#if defined(HALCYON_ENABLE)
+const uint16_t left_halcyon_buttons[10][5] = {
+    [BASE]    = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
+    [SYM]     = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
+    [NAV]     = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
+    [GAME]    = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
+    [SETTING] = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
+};
+
+const uint16_t right_halcyon_buttons[10][5] = {
+    [BASE]    = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
+    [SYM]     = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
+    [NAV]     = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
+    [GAME]    = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
+    [SETTING] = {KC_NO, KC_NO, KC_NO, KC_NO, KC_NO},
+};
+#endif
