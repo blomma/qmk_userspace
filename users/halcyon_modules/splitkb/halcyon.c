@@ -13,6 +13,9 @@ __attribute__((weak)) void module_suspend_wakeup_init_kb(void);
 __attribute__((weak)) bool module_post_init_kb(void) {
     return module_post_init_user();
 }
+__attribute__((weak)) bool module_oled_housekeeping_task_kb(void) {
+    return true;
+}
 __attribute__((weak)) bool module_housekeeping_task_kb(void) {
     return module_housekeeping_task_user();
 }
@@ -124,6 +127,8 @@ void housekeeping_task_kb(void) {
             }
         }
     }
+
+    module_oled_housekeeping_task_kb();
 
     module_housekeeping_task_kb();
 
