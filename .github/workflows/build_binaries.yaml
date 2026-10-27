@@ -12,6 +12,7 @@ jobs:
     with:
       qmk_repo: vial-kb/vial-qmk
       qmk_ref: vial
+      preparation_command: 'cp "$GITHUB_WORKSPACE/patches/math.py" qmk_firmware/lib/python/qmk/math.py'
 
   publish:
     name: 'QMK Userspace Publish'
