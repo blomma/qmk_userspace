@@ -3,6 +3,17 @@
 
 #pragma once
 
+#undef I2C_DRIVER
+#undef I2C1_SDA_PIN
+#undef I2C1_SCL_PIN
+#define I2C_DRIVER I2CD0
+#define I2C1_SDA_PIN 20
+#define I2C1_SCL_PIN 25
+
+#define OLED_TIMEOUT 0
+#undef SPLIT_OLED_ENABLE
+#define SPLIT_ACTIVITY_ENABLE
+
 #if defined(RGB_MATRIX_ENABLE)
 #    define RGB_MATRIX_SLEEP      // turn off effects when suspended
 #    define RGB_MATRIX_KEYPRESSES // React to keypresses
