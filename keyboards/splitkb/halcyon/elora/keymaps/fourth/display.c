@@ -1,41 +1,56 @@
-#include "qp.h"
-#include "qp_surface.h"
+#include QMK_KEYBOARD_H
 #include "hardware/structs/rosc.h"
-#include "display.h"
+#include "hlc_tft_display/hlc_tft_display.h"
 #include "cross_platform.h"
+#include "layers.h"
 
 // Fonts mono2
-#include "../../../../../../users/halcyon_modules/splitkb/hlc_tft_display/graphics/fonts/Retron2000-27.qff.h"
+#include "hlc_tft_display/graphics/fonts/Retron2000-27.qff.h"
 
 // Numbers mono2
-#include "../../../../../../users/halcyon_modules/splitkb/hlc_tft_display/graphics/numbers/0.qgf.h"
-#include "../../../../../../users/halcyon_modules/splitkb/hlc_tft_display/graphics/numbers/1.qgf.h"
-#include "../../../../../../users/halcyon_modules/splitkb/hlc_tft_display/graphics/numbers/2.qgf.h"
-#include "../../../../../../users/halcyon_modules/splitkb/hlc_tft_display/graphics/numbers/3.qgf.h"
-#include "../../../../../../users/halcyon_modules/splitkb/hlc_tft_display/graphics/numbers/4.qgf.h"
-#include "../../../../../../users/halcyon_modules/splitkb/hlc_tft_display/graphics/numbers/undef.qgf.h"
+#include "hlc_tft_display/graphics/numbers/0.qgf.h"
+#include "hlc_tft_display/graphics/numbers/1.qgf.h"
+#include "hlc_tft_display/graphics/numbers/2.qgf.h"
+#include "hlc_tft_display/graphics/numbers/3.qgf.h"
+#include "hlc_tft_display/graphics/numbers/4.qgf.h"
+#include "hlc_tft_display/graphics/numbers/undef.qgf.h"
 
-static const char *base    = "Base";
-static const char *sym     = "Sym";
-static const char *nav     = "Nav";
-static const char *game    = "Game";
-static const char *setting = "Setting";
+// Layer colours, indexed by layer number and also used for the Game of Life
+// cells. All values (including hue) are scaled to 0-255.
+static const hsv_t layer_colors[] = {
+    {0, 0, 255},    // 0
+    {23, 89, 255},  // 1
+    {43, 71, 255},  // 2
+    {0, 82, 255},   // 3
+    {77, 64, 255},  // 4
+    {176, 77, 255}, // 5
+    {131, 99, 255}, // 6
+    {154, 94, 255}, // 7
+};
+static const hsv_t undefined_layer_color = {0, 255, 255};
+
+// Name and number image shown for each layer
+// clang-format off
+static const struct {
+    const char    *name;
+    const uint8_t *number;
+} layer_display[] = {
+    [BASE]    = {"Base",    gfx_0},
+    [SYM]     = {"Sym",     gfx_1},
+    [NAV]     = {"Nav",     gfx_2},
+    [GAME]    = {"Game",    gfx_3},
+    [SETTING] = {"Setting", gfx_4},
+};
+// clang-format on
 
 static const char *windows = "Win";
 static const char *macos   = "Mac";
 
-static painter_font_handle_t  Retron27;
-static painter_image_handle_t layer_number;
+static painter_font_handle_t Retron27;
 
-// Defined and initialised by the Halcyon TFT module (hlc_tft_display.c)
-extern painter_device_t lcd;
-extern painter_device_t lcd_surface;
+static char buf[64] = {0};
 
-layer_state_t previous_layer_state = {0};
-
-char buf[64] = {0};
-
-int cell_color_value = 0;
+static uint8_t cell_color_value = 0;
 #define GRID_WIDTH 27
 #define GRID_HEIGHT 48
 #define CELL_SIZE 4 // Cell size excluding outline
@@ -74,7 +89,7 @@ static uint32_t changed_grid[GRID_HEIGHT]; // Tracks changed cells (bit-packed)
 // Seed built from 32 ROSC (Ring Oscillator) random bits. Each bit is sampled
 // 10us apart, the minimum spacing pico-sdk's pico_rand uses, so consecutive
 // reads don't return the same oscillator state. Costs ~320us, once.
-uint32_t get_random_seed(void) {
+static uint32_t get_random_seed(void) {
     uint32_t seed = 0;
     for (int i = 0; i < 32; i++) {
         wait_us(10);
@@ -83,7 +98,7 @@ uint32_t get_random_seed(void) {
     return seed;
 }
 
-void init_game_of_life_grid(void) {
+static void init_game_of_life_grid(void) {
     // Initialize grid with alive cells
     for (int y = 0; y < GRID_HEIGHT; y++) {
         p_grid[y] = 0;
@@ -97,36 +112,9 @@ void init_game_of_life_grid(void) {
     }
 }
 
-/**
- * Maps the color index to specific HSV values defined in display.h.
- * Moving this to a helper allows the draw loop to calculate color ONCE per
- * frame instead of per-cell.
- */
-static hsv_t get_hsv_color(int index) {
-    switch (index) {
-        case 0:
-            return (hsv_t){HSV_LAYER_0};
-        case 1:
-            return (hsv_t){HSV_LAYER_1};
-        case 2:
-            return (hsv_t){HSV_LAYER_2};
-        case 3:
-            return (hsv_t){HSV_LAYER_3};
-        case 4:
-            return (hsv_t){HSV_LAYER_4};
-        case 5:
-            return (hsv_t){HSV_LAYER_5};
-        case 6:
-            return (hsv_t){HSV_LAYER_6};
-        case 7:
-            return (hsv_t){HSV_LAYER_7};
-        default:
-            return (hsv_t){HSV_LAYER_UNDEF};
-    }
-}
-
-void draw_game_of_life_grid(void) {
-    const hsv_t color = get_hsv_color(cell_color_value);
+static void draw_game_of_life_grid(void) {
+    // Colour is looked up once per frame instead of per cell
+    const hsv_t color = layer_colors[cell_color_value];
 
     for (int y = 0; y < GRID_HEIGHT; y++) {
         uint32_t changed = changed_grid[y];
@@ -168,7 +156,7 @@ void draw_game_of_life_grid(void) {
     }
 }
 
-void update_game_of_life_grid(void) {
+static void update_game_of_life_grid(void) {
     for (int y = 0; y < GRID_HEIGHT; y++) {
         uint32_t next_row = 0;
 
@@ -235,7 +223,7 @@ void update_game_of_life_grid(void) {
 }
 
 // Function to add a cluster of cells at a random position
-void add_cell_cluster_to_game_of_life_grid(void) {
+static void add_cell_cluster_to_game_of_life_grid(void) {
     int cluster_size = 3;
     int x            = rand() % (GRID_WIDTH - cluster_size);
     int y            = rand() % (GRID_HEIGHT - cluster_size);
@@ -258,6 +246,30 @@ static void clear_text_row(uint16_t y) {
             HSV_BLACK, true);
 }
 
+// Draws the layer number image and, for known layers, the layer name.
+// Only the layer name row is cleared, not the whole surface: a full clear
+// marks every pixel dirty and pushes the entire framebuffer over SPI on each
+// layer change. The layer number images share one size and are drawn with a
+// black background, so they overwrite each other.
+static void draw_layer(uint8_t layer, uint16_t name_y) {
+    const uint8_t *number = gfx_undef;
+    hsv_t          color  = undefined_layer_color;
+
+    clear_text_row(name_y);
+
+    if (layer < ARRAY_SIZE(layer_display)) {
+        number = layer_display[layer].number;
+        color  = layer_colors[layer];
+        qp_drawtext_recolor(lcd_surface, 5, name_y, Retron27,
+                            layer_display[layer].name, HSV_CAPS_ON, HSV_BLACK);
+    }
+
+    painter_image_handle_t image = qp_load_image_mem(number);
+    qp_drawimage_recolor(lcd_surface, 5, 5, image, color.h, color.s, color.v,
+                         HSV_BLACK);
+    qp_close_image(image);
+}
+
 bool display_module_housekeeping_task_user(const bool second_display) {
     if (second_display) {
         static uint32_t last_draw                     = 0;
@@ -267,7 +279,7 @@ bool display_module_housekeeping_task_user(const bool second_display) {
         if (!second_display_set) {
             srand(get_random_seed());
             init_game_of_life_grid();
-            cell_color_value   = rand() % 8;
+            cell_color_value   = rand() % ARRAY_SIZE(layer_colors);
             second_display_set = true;
         }
 
@@ -276,7 +288,7 @@ bool display_module_housekeeping_task_user(const bool second_display) {
             update_game_of_life_grid();
 
             if (previous_matrix_activity_time != last_matrix_activity_time()) {
-                cell_color_value = rand() % 8;
+                cell_color_value = rand() % ARRAY_SIZE(layer_colors);
                 add_cell_cluster_to_game_of_life_grid();
                 previous_matrix_activity_time = last_matrix_activity_time();
             }
@@ -286,8 +298,7 @@ bool display_module_housekeeping_task_user(const bool second_display) {
     }
 
     if (!second_display) {
-        static bool first_run_layer = false;
-        if (first_run_layer == false) {
+        if (Retron27 == NULL) {
             Retron27 = qp_load_font_mem(font_Retron2000_27);
         }
 
@@ -299,68 +310,15 @@ bool display_module_housekeeping_task_user(const bool second_display) {
         const uint16_t rgb_mode_y   = rgb_speed_y - Retron27->line_height;
         const uint16_t layer_name_y = rgb_mode_y - Retron27->line_height;
 
-        // Only the layer name row is cleared, not the whole surface: a full
-        // clear marks every pixel dirty and pushes the entire framebuffer over
-        // SPI on each layer change. The layer number images share one size and
-        // are drawn with a black background, so they overwrite each other.
-        if (previous_layer_state != layer_state || first_run_layer == false) {
-            clear_text_row(layer_name_y);
+        // Redraw only when the shown layer changes. Starts out of range so the
+        // first call always draws.
+        static uint8_t last_layer = UINT8_MAX;
+        const uint8_t  layer =
+            get_highest_layer(layer_state | default_layer_state);
 
-            switch (get_highest_layer(layer_state | default_layer_state)) {
-                case 0:
-                    qp_drawtext_recolor(
-                        lcd_surface, 5,
-                        layer_name_y, Retron27,
-                        base, HSV_CAPS_ON, HSV_BLACK);
-                    layer_number = qp_load_image_mem(gfx_0);
-                    qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
-                                         HSV_LAYER_0, HSV_BLACK);
-                    break;
-                case 1:
-                    qp_drawtext_recolor(
-                        lcd_surface, 5,
-                        layer_name_y, Retron27,
-                        sym, HSV_CAPS_ON, HSV_BLACK);
-                    layer_number = qp_load_image_mem(gfx_1);
-                    qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
-                                         HSV_LAYER_1, HSV_BLACK);
-                    break;
-                case 2:
-                    qp_drawtext_recolor(
-                        lcd_surface, 5,
-                        layer_name_y, Retron27,
-                        nav, HSV_CAPS_ON, HSV_BLACK);
-                    layer_number = qp_load_image_mem(gfx_2);
-                    qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
-                                         HSV_LAYER_2, HSV_BLACK);
-                    break;
-                case 3:
-                    qp_drawtext_recolor(
-                        lcd_surface, 5,
-                        layer_name_y, Retron27,
-                        game, HSV_CAPS_ON, HSV_BLACK);
-                    layer_number = qp_load_image_mem(gfx_3);
-                    qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
-                                         HSV_LAYER_3, HSV_BLACK);
-                    break;
-                case 4:
-                    qp_drawtext_recolor(
-                        lcd_surface, 5,
-                        layer_name_y, Retron27,
-                        setting, HSV_CAPS_ON, HSV_BLACK);
-                    layer_number = qp_load_image_mem(gfx_4);
-                    qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
-                                         HSV_LAYER_4, HSV_BLACK);
-                    break;
-                default:
-                    layer_number = qp_load_image_mem(gfx_undef);
-                    qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
-                                         HSV_LAYER_UNDEF, HSV_BLACK);
-            }
-
-            qp_close_image(layer_number);
-            previous_layer_state = layer_state;
-            first_run_layer      = true;
+        if (layer != last_layer) {
+            draw_layer(layer, layer_name_y);
+            last_layer = layer;
         }
 
         // Host selected with XP_MODE. That state lives on the master half, so
@@ -388,7 +346,7 @@ bool display_module_housekeeping_task_user(const bool second_display) {
         static uint8_t last_rgb_val   = 0;
         static uint8_t last_rgb_speed = 0;
 
-        if (get_highest_layer(layer_state | default_layer_state) == 4) {
+        if (layer == SETTING) {
             const uint8_t mode  = rgb_matrix_get_mode();
             const uint8_t val   = rgb_matrix_get_val();
             const uint8_t speed = rgb_matrix_get_speed();

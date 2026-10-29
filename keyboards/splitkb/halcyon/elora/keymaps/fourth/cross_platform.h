@@ -37,8 +37,9 @@ void tap_dance_xp_pair_on_each_tap(tap_dance_state_t *state, void *user_data);
 void tap_dance_xp_pair_finished(tap_dance_state_t *state, void *user_data);
 void tap_dance_xp_pair_reset(tap_dance_state_t *state, void *user_data);
 
-#define ACTION_TAP_DANCE_XP_DOUBLE(kc1, kc2)                                                                     \
-    {                                                                                                            \
-        .fn        = {tap_dance_xp_pair_on_each_tap, tap_dance_xp_pair_finished, tap_dance_xp_pair_reset, NULL}, \
-        .user_data = (void *)&((tap_dance_xp_pair_t){kc1, kc2, KC_NO}),                                          \
+#define ACTION_TAP_DANCE_XP_DOUBLE(kc1, kc2)                                     \
+    {                                                                            \
+        .fn        = {tap_dance_xp_pair_on_each_tap, tap_dance_xp_pair_finished, \
+                      tap_dance_xp_pair_reset, NULL},                            \
+        .user_data = (void *)&((tap_dance_xp_pair_t){kc1, kc2, KC_NO}),          \
     }
