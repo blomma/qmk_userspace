@@ -23,8 +23,9 @@ static const char *setting = "Setting";
 static painter_font_handle_t  Retron27;
 static painter_image_handle_t layer_number;
 
-painter_device_t lcd;
-painter_device_t lcd_surface;
+// Defined and initialised by the Halcyon TFT module (hlc_tft_display.c)
+extern painter_device_t lcd;
+extern painter_device_t lcd_surface;
 
 layer_state_t previous_layer_state = {0};
 
@@ -66,12 +67,16 @@ static uint32_t *p_new_grid = grid2; // Pointer to next state
 // If a bit is 1, the cell flipped (Alive<->Dead). If 0, it stayed the same.
 static uint32_t changed_grid[GRID_HEIGHT]; // Tracks changed cells (bit-packed)
 
-// Seeding Optimization: Instead of waiting 32ms (32 * wait_ms(1)) to harvest
-// entropy from the ROsc (Ring Oscillator), we use the system timer.
-// timer_read32() provides the milliseconds since boot, which is highly variable
-// depending on exactly when the user powers on or interacts with the board.
+// Seed built from 32 ROSC (Ring Oscillator) random bits. Each bit is sampled
+// 10us apart, the minimum spacing pico-sdk's pico_rand uses, so consecutive
+// reads don't return the same oscillator state. Costs ~320us, once.
 uint32_t get_random_seed(void) {
-    return timer_read32() ^ rosc_hw->randombit;
+    uint32_t seed = 0;
+    for (int i = 0; i < 32; i++) {
+        wait_us(10);
+        seed = (seed << 1) | (rosc_hw->randombit & 1);
+    }
+    return seed;
 }
 
 void init_game_of_life_grid(void) {
@@ -262,7 +267,7 @@ bool display_module_housekeeping_task_user(const bool second_display) {
             second_display_set = true;
         }
 
-        if (timer_elapsed32(last_draw) >= 200) { // Throttle to 10 fps
+        if (timer_elapsed32(last_draw) >= 200) { // Throttle to 5 fps
             draw_game_of_life_grid();
             update_game_of_life_grid();
 
