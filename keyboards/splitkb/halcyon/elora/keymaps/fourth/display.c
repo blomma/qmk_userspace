@@ -45,6 +45,7 @@ static const struct {
 
 static const char *windows = "Win";
 static const char *macos   = "Mac";
+static const char *boot    = "Boot";
 
 static painter_font_handle_t Retron27;
 
@@ -240,6 +241,20 @@ static void add_cell_cluster_to_game_of_life_grid(void) {
     }
 }
 
+// Text rows stacked up from the bottom edge: the host on the bottom row, the
+// RGB readout above it and the layer name on top, just under the layer number
+// image.
+enum text_rows {
+    HOST_ROW,
+    RGB_SPEED_ROW,
+    RGB_MODE_ROW,
+    LAYER_NAME_ROW,
+};
+
+static uint16_t text_row_y(uint8_t row) {
+    return LCD_HEIGHT - 5 - Retron27->line_height * (row + 1);
+}
+
 // Blanks one full-width line of text starting at y
 static void clear_text_row(uint16_t y) {
     qp_rect(lcd_surface, 0, y, LCD_WIDTH - 1, y + Retron27->line_height - 1,
@@ -302,13 +317,10 @@ bool display_module_housekeeping_task_user(const bool second_display) {
             Retron27 = qp_load_font_mem(font_Retron2000_27);
         }
 
-        // Text rows stacked up from the bottom edge: the host on the bottom
-        // row, the RGB readout above it and the layer name on top, just under
-        // the layer number image.
-        const uint16_t host_y       = LCD_HEIGHT - Retron27->line_height - 5;
-        const uint16_t rgb_speed_y  = host_y - Retron27->line_height;
-        const uint16_t rgb_mode_y   = rgb_speed_y - Retron27->line_height;
-        const uint16_t layer_name_y = rgb_mode_y - Retron27->line_height;
+        const uint16_t host_y       = text_row_y(HOST_ROW);
+        const uint16_t rgb_speed_y  = text_row_y(RGB_SPEED_ROW);
+        const uint16_t rgb_mode_y   = text_row_y(RGB_MODE_ROW);
+        const uint16_t layer_name_y = text_row_y(LAYER_NAME_ROW);
 
         // Redraw only when the shown layer changes. Starts out of range so the
         // first call always draws.
@@ -382,4 +394,26 @@ bool display_module_housekeeping_task_user(const bool second_display) {
     qp_flush(lcd);
 
     return false;
+}
+
+// QK_BOOT: replace the layer name with a boot message before the jump to the
+// bootloader. The display keeps showing it while in the bootloader. QK_BOOT
+// runs on the half plugged into USB, which is the half showing the layer
+// screen, so the font is already loaded there.
+bool shutdown_user(bool jump_to_bootloader) {
+    if (jump_to_bootloader && Retron27 != NULL) {
+        // The key press would normally wake a timed-out display on the next
+        // housekeeping pass, which never comes once we jump
+        backlight_wakeup();
+        qp_power(lcd, true);
+
+        const uint16_t name_y = text_row_y(LAYER_NAME_ROW);
+        clear_text_row(name_y);
+        qp_drawtext_recolor(lcd_surface, 5, name_y, Retron27, boot, HSV_RED,
+                            HSV_BLACK);
+        qp_surface_draw(lcd_surface, lcd, 0, 0, 0);
+        qp_flush(lcd);
+    }
+
+    return true;
 }
