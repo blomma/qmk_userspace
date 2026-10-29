@@ -3,6 +3,12 @@
 // Myriad boilerplate
 #undef MYRIAD_ENABLE
 
+// The keyboard slows I2C down to 100 kHz for the EEPROM on a Myriad card.
+// Without a Myriad card only the OLED is on the bus, so run it at the RP2040
+// default of 400 kHz.
+#undef I2C1_CLOCK_SPEED
+#define I2C1_CLOCK_SPEED 400000
+
 #undef OLED_TIMEOUT
 #define OLED_TIMEOUT 60000
 
