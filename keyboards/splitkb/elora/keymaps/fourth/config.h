@@ -6,6 +6,14 @@
 #undef OLED_TIMEOUT
 #define OLED_TIMEOUT 60000
 
+// Each half only sees its own key presses, so without this the half not
+// plugged into USB times out its display while you type on the other half.
+// The half plugged into USB now turns both displays on and off.
+#define SPLIT_OLED_ENABLE
+
+// Sends the host selected with XP_MODE to the half showing the layer screen
+#define SPLIT_TRANSACTION_IDS_USER XP_HOST_SYNC
+
 #undef RGB_MATRIX_TIMEOUT
 #define RGB_MATRIX_TIMEOUT 180000
 
@@ -17,7 +25,7 @@
 #undef TAPPING_TERM
 #define TAPPING_TERM 200
 
-// Recomended for Chordal hold
+// Recommended for Chordal hold
 #undef PERMISSIVE_HOLD
 // #define PERMISSIVE_HOLD
 
