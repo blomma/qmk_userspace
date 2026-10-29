@@ -137,8 +137,6 @@ void housekeeping_task_kb(void) {
     module_oled_housekeeping_task_kb();
 
     module_housekeeping_task_kb();
-
-    housekeeping_task_user();
 }
 
 report_mouse_t pointing_device_task_combined_kb(report_mouse_t left_report, report_mouse_t right_report) {
