@@ -83,14 +83,24 @@ static void set_config(const cross_platform_config_t *new_config) {
 }
 
 #ifdef SPLIT_KEYBOARD
-// The other half only receives the selection, it never saves it. Its own
-// EEPROM keeps whatever was selected while it was plugged into USB.
+// Set when the other half receives a selection it hasn't saved yet. The
+// handler runs on the split transport's thread, so it leaves the EEPROM write
+// to housekeeping on the main loop.
+static volatile bool save_pending = false;
+
+// The other half takes the selection and saves it once it changes, so it
+// still has it when it is the one plugged into USB
 static void host_sync_handler(uint8_t in_buflen, const void *in_data,
                               uint8_t out_buflen, void *out_data) {
     if (in_buflen == sizeof(cross_platform_config_t)) {
         cross_platform_config_t received;
         memcpy(&received, in_data, sizeof(received));
+
+        const uint8_t previous_host = config.host;
         set_config(&received);
+        if (config.host != previous_host) {
+            save_pending = true;
+        }
     }
 }
 #endif
@@ -123,6 +133,11 @@ void housekeeping_task_cross_platform(void) {
                 last_sync   = timer_read32();
             }
         }
+    } else if (save_pending) {
+        // Cleared before the write, so a selection that arrives during it
+        // is saved on the next pass
+        save_pending = false;
+        eeconfig_update_cross_platform_datablock(&config, 0, sizeof(config));
     }
 #endif
 

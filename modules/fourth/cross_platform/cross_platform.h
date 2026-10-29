@@ -16,7 +16,7 @@ typedef enum {
 } xp_host_t;
 
 // The selected host. On a split keyboard both halves agree, as the half
-// plugged into USB sends its selection to the other half.
+// plugged into USB sends its selection to the other half, which saves it too.
 xp_host_t xp_host(void);
 
 // Short name for a host, such as "Mac", that fits on a display

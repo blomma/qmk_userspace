@@ -33,10 +33,9 @@ Every other symbol uses the same combination on both, so keymaps use the
 
 `XP_MODE` toggles between Windows and macOS. The default is macOS.
 
-The selection is saved in EEPROM, separately on each half of a split
-keyboard, so if you sometimes plug in the other half, select the host there
-once too. The half plugged into USB sends its selection to the other half, so
-both halves agree while the keyboard is in use.
+The selection is saved in EEPROM. On a split keyboard, the half plugged into
+USB sends its selection to the other half, which saves it as well, so both
+halves agree and either one can be plugged in next time.
 
 From C, `xp_host()` returns the selected host and `xp_host_name()` gives a
 short name for it (`Mac` or `Win`) to show on a display.
