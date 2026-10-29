@@ -1,0 +1,15 @@
+{
+    "module_name": "Cross platform",
+    "maintainer": "blomma",
+    "license": "GPL-2.0-or-later",
+    "features": {
+        "tap_dance": true
+    },
+    "keycodes": [
+        { "key": "XP_LCBR" },
+        { "key": "XP_RCBR" },
+        { "key": "XP_BSLS" },
+        { "key": "XP_PIPE" },
+        { "key": "XP_MODE" }
+    ]
+}

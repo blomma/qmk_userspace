@@ -2,29 +2,29 @@
 
 #include QMK_KEYBOARD_H
 
-// Swedish symbols that need a different chord on Windows and macOS. Each one
-// resolves to the chord for the selected host when it is pressed. Symbols that
-// share a chord on both hosts use the plain SE_ keycodes from keymap_swedish.h.
-enum cross_platform_keycodes {
-    XP_LCBR = SAFE_RANGE, // {
-    XP_RCBR,              // }
-    XP_BSLS,              // (backslash)
-    XP_PIPE,              // |
-    XP_SYMBOLS_END,
-    // Toggles between Windows and macOS chords, remembered across power cycles
-    XP_MODE = XP_SYMBOLS_END,
-};
+// Swedish symbols that need a different chord on Windows and macOS. Each XP_
+// symbol keycode (XP_LCBR, XP_RCBR, XP_BSLS, XP_PIPE) resolves to the chord
+// for the selected host when it is pressed, and XP_MODE toggles between
+// Windows and macOS. The keycodes are declared in qmk_module.json. Symbols
+// that share a chord on both hosts use the plain SE_ keycodes from
+// keymap_swedish.h.
 
-// Loads the selected host from EEPROM. Call from keyboard_post_init_user.
-void cross_platform_init(void);
+typedef enum {
+    XP_HOST_MACOS,
+    XP_HOST_WINDOWS,
+    XP_HOST_COUNT,
+} xp_host_t;
 
-bool xp_is_macos(void);
+// The selected host. On a split keyboard both halves agree, as the half
+// plugged into USB sends its selection to the other half.
+xp_host_t xp_host(void);
+
+// Short name for a host, such as "Mac", that fits on a display
+const char *xp_host_name(xp_host_t host);
 
 // Resolves an XP_ symbol to the chord for the selected host. Any other keycode
 // is returned unchanged.
 uint16_t xp_resolve(uint16_t keycode);
-
-bool process_record_cross_platform(uint16_t keycode, keyrecord_t *record);
 
 // Like ACTION_TAP_DANCE_DOUBLE, but kc1 and kc2 may be XP_ symbols.
 typedef struct {

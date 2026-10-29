@@ -1,6 +1,5 @@
 #include QMK_KEYBOARD_H
 #include <string.h>
-#include "transactions.h"
 #include "cross_platform.h"
 #include "display.h"
 #include "frames.h"
@@ -15,24 +14,22 @@ _Static_assert(sizeof(base_logo) == OLED_MATRIX_SIZE, "logo size");
 _Static_assert(sizeof(sym_logo) == OLED_MATRIX_SIZE, "logo size");
 _Static_assert(sizeof(game_logo) == OLED_MATRIX_SIZE, "logo size");
 
-// Logo and name shown for each layer. The logos only cover the middle eight
-// of the sixteen text lines, which leaves room for text above and below them.
+// Logo shown for each layer, NULL for a text only screen. The logos only cover
+// the middle eight of the sixteen text lines, which leaves room for the layer
+// name and other text above and below them.
 // clang-format off
-static const struct {
-    const char *name;
-    const char *logo; // NULL for a text only screen
-} layer_display[] = {
-    [BASE]    = {"Base",    base_logo},
-    [SYM]     = {"Sym",     sym_logo},
-    [NAV]     = {"Nav",     sym_logo},
-    [GAME]    = {"Game",    game_logo},
-    [SETTING] = {"Setting", NULL},
+static const char *const layer_logos[] = {
+    [BASE]    = base_logo,
+    [SYM]     = sym_logo,
+    [NAV]     = sym_logo,
+    [GAME]    = game_logo,
+    [SETTING] = NULL,
 };
 // clang-format on
+_Static_assert(ARRAY_SIZE(layer_logos) == LAYER_COUNT,
+               "layer_logos needs an entry for every layer");
 
-static const char *windows = "Win";
-static const char *macos   = "Mac";
-static const char *boot    = "Boot";
+static const char *boot = "Boot";
 
 // Text lines on the layer screen
 enum text_lines {
@@ -44,45 +41,6 @@ enum text_lines {
 };
 
 static uint8_t current_frame = 0;
-
-// Host selected with XP_MODE. That state lives on the half plugged into USB,
-// which shows the plant, so it is sent over to the half showing the layer
-// screen. Nothing is shown until the first value arrives.
-static bool host_received = false;
-static bool host_macos    = false;
-
-static void host_sync_handler(uint8_t in_buflen, const void *in_data,
-                              uint8_t out_buflen, void *out_data) {
-    if (in_buflen == sizeof(host_macos)) {
-        memcpy(&host_macos, in_data, sizeof(host_macos));
-        host_received = true;
-    }
-}
-
-void display_init(void) {
-    transaction_register_rpc(XP_HOST_SYNC, host_sync_handler);
-}
-
-void housekeeping_task_user(void) {
-    if (!is_keyboard_master()) {
-        return;
-    }
-
-    // Sent on every change, and every half second on top of that so a half
-    // that reconnects gets it again
-    static bool     synced       = false;
-    static bool     synced_macos = false;
-    static uint32_t last_sync    = 0;
-    const bool      macos        = xp_is_macos();
-
-    if (!synced || macos != synced_macos || timer_elapsed32(last_sync) >= 500) {
-        if (transaction_rpc_send(XP_HOST_SYNC, sizeof(macos), &macos)) {
-            synced       = true;
-            synced_macos = macos;
-            last_sync    = timer_read32();
-        }
-    }
-}
 
 void display_count_keypress(void) {
     static uint8_t keypresses = 0;
@@ -118,19 +76,18 @@ static void write_value(uint8_t line, const char *label, uint8_t value) {
 // marks the whole screen dirty.
 static void render_layer_screen(void) {
     static uint8_t last_layer = UINT8_MAX;
-    const uint8_t  layer =
-        get_highest_layer(layer_state | default_layer_state);
+    const uint8_t  layer = get_highest_layer(layer_state | default_layer_state);
 
     if (layer != last_layer) {
         oled_clear();
         last_layer = layer;
     }
 
-    if (layer < ARRAY_SIZE(layer_display)) {
-        if (layer_display[layer].logo != NULL) {
-            oled_write_raw_P(layer_display[layer].logo, OLED_MATRIX_SIZE);
+    if (layer < LAYER_COUNT) {
+        if (layer_logos[layer] != NULL) {
+            oled_write_raw_P(layer_logos[layer], OLED_MATRIX_SIZE);
         }
-        write_centered(LAYER_NAME_LINE, layer_display[layer].name);
+        write_centered(LAYER_NAME_LINE, layer_name(layer));
     } else {
         write_centered(LAYER_NAME_LINE, "?");
     }
@@ -141,9 +98,7 @@ static void render_layer_screen(void) {
         write_value(RGB_SPEED_LINE, PSTR("MS: "), rgb_matrix_get_speed());
     }
 
-    if (host_received) {
-        write_centered(HOST_LINE, host_macos ? macos : windows);
-    }
+    write_centered(HOST_LINE, xp_host_name(xp_host()));
 }
 
 bool oled_task_user(void) {

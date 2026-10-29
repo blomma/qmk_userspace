@@ -15,75 +15,35 @@ SETTING layer) and copying the `.uf2` file onto the `RPI-RP2` drive.
 ## Windows and macOS
 
 A few Swedish symbols need different key combinations on Windows and macOS.
-They use the `XP_` keycodes from `cross_platform.h`:
-
-| Symbol | Keycode   | Windows | macOS        |
-|--------|-----------|---------|--------------|
-| `{`    | `XP_LCBR` | AltGr+7 | Shift+Opt+8  |
-| `}`    | `XP_RCBR` | AltGr+0 | Shift+Opt+9  |
-| `\`    | `XP_BSLS` | AltGr++ | Shift+Opt+7  |
-| `\|`   | `XP_PIPE` | AltGr+< | Opt+7        |
-
-Every other symbol uses the same combination on both and comes straight from
-QMK's `keymap_swedish.h`.
-
-`XP_MODE` on the SETTING layer toggles between Windows and macOS, starting on
-macOS. The display
-on the half plugged into USB shows the current mode (`Win` or `Mac`). The mode
-is saved in EEPROM, separately on each half, so if you sometimes plug in the
-other half, set the mode there once too.
+`XP_MODE` on the SETTING layer toggles between them, starting on macOS, and
+the layer screen shows the current choice (`Win` or `Mac`). The
+[`fourth/cross_platform` module](../../../../../../modules/fourth/cross_platform/README.md) has the
+details.
 
 ## macOS: set the keyboard type to ISO
 
-macOS keeps a keyboard type (ANSI, ISO or JIS) for each keyboard. If it
-treats this keyboard as ANSI, it swaps the `§` key and the `<` key, so `<` and
-`>` come out as `§` and `°`. The keymap assumes ISO.
+The keymap assumes macOS treats the keyboard as ISO, otherwise `<` and `>`
+come out as `§` and `°`. The
+[`fourth/cross_platform` module](../../../../../../modules/fourth/cross_platform/README.md#macos-set-the-keyboard-type-to-iso)
+explains why and how.
 
-macOS stores the type in `/Library/Preferences/com.apple.keyboardtype`, keyed
-by `<product ID>-<vendor ID>-0` in decimal:
-
-| Value | Type |
-|-------|------|
-| 40    | ANSI |
-| 41    | ISO  |
-| 42    | JIS  |
-
-For this keyboard (vendor `0x8D1D`, product `0xA392`) the key is
-`41874-36125-0`. Both halves use the same IDs, so one entry covers whichever
-half is plugged in.
-
-### Check the current type
+For the Halcyon Elora rev2 (vendor `0x8D1D`, product `0xA392`) the key is `41874-36125-0`.
+Both halves use the same IDs, so one entry covers whichever half is plugged
+in:
 
 ```sh
-defaults read /Library/Preferences/com.apple.keyboardtype
-```
-
-Look for `"41874-36125-0" = 41;`.
-
-### Set it to ISO
-
-```sh
+defaults read /Library/Preferences/com.apple.keyboardtype   # look for "41874-36125-0" = 41;
 sudo defaults write /Library/Preferences/com.apple.keyboardtype keyboardtype -dict-add "41874-36125-0" -int 41
 ```
 
 Unplug and replug the keyboard afterwards so macOS picks up the change.
 
-You can also use System Settings → Keyboard → Change Keyboard Type…, but
-unplug any other keyboards first. Otherwise macOS may save the type for the
-wrong keyboard, especially other splitkb boards, which share the same vendor
-ID.
+## Shared code
 
-### Other keyboards
+This keymap and the other `fourth` keymap share code through the community
+modules in `modules/fourth`, enabled in `keymap.json`:
 
-To find the IDs of another keyboard:
-
-```sh
-hidutil list | grep -i elora
-```
-
-The first two columns are the vendor and product IDs in hex. Convert them to
-decimal for the key:
-
-```sh
-printf "%d-%d-0\n" 0xA392 0x8D1D   # product first, then vendor
-```
+- [`fourth/cross_platform`](../../../../../../modules/fourth/cross_platform/README.md): the `XP_`
+  keycodes, the Windows/macOS toggle and `ACTION_TAP_DANCE_XP_DOUBLE`
+- [`fourth/layout`](../../../../../../modules/fourth/layout/README.md): the layer list and names, the
+  tap dances, and the tapping and RGB timeout settings

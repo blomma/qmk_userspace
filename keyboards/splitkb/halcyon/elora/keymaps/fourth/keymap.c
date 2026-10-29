@@ -1,25 +1,10 @@
 #include QMK_KEYBOARD_H
 #include "keymap_swedish.h"
-#include "cross_platform.h"
 #include "layers.h"
+#include "tap_dances.h"
 
-// Tap Dance declarations
-enum {
-    TD_LCBR_RCBR,
-    TD_LPR_RPR,
-    TD_LBRC_RBRC,
-    TD_COMMA_LESS,
-    TD_DOT_GRTR
-};
-
-// Tap Dance definitions
-tap_dance_action_t tap_dance_actions[] = {
-    [TD_LCBR_RCBR]  = ACTION_TAP_DANCE_XP_DOUBLE(XP_LCBR, XP_RCBR),
-    [TD_LPR_RPR]    = ACTION_TAP_DANCE_XP_DOUBLE(SE_LPRN, SE_RPRN),
-    [TD_LBRC_RBRC]  = ACTION_TAP_DANCE_XP_DOUBLE(SE_LBRC, SE_RBRC),
-    [TD_COMMA_LESS] = ACTION_TAP_DANCE_XP_DOUBLE(SE_COMM, SE_LABK),
-    [TD_DOT_GRTR]   = ACTION_TAP_DANCE_XP_DOUBLE(SE_DOT, SE_RABK),
-};
+// The XP_ keycodes come from the fourth/cross_platform module, the TD_ tap
+// dances from tap_dances.h in the fourth/layout module
 
 // clang-format off
 // const char chordal_hold_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT(
@@ -129,11 +114,3 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 // clang-format on
-
-void keyboard_post_init_user(void) {
-    cross_platform_init();
-}
-
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    return process_record_cross_platform(keycode, record);
-}

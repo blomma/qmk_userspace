@@ -28,24 +28,23 @@ static const hsv_t layer_colors[] = {
     {154, 94, 255}, // 7
 };
 static const hsv_t undefined_layer_color = {0, 255, 255};
+_Static_assert(ARRAY_SIZE(layer_colors) >= LAYER_COUNT,
+               "layer_colors needs a colour for every layer");
 
-// Name and number image shown for each layer
+// Number image shown for each layer
 // clang-format off
-static const struct {
-    const char    *name;
-    const uint8_t *number;
-} layer_display[] = {
-    [BASE]    = {"Base",    gfx_0},
-    [SYM]     = {"Sym",     gfx_1},
-    [NAV]     = {"Nav",     gfx_2},
-    [GAME]    = {"Game",    gfx_3},
-    [SETTING] = {"Setting", gfx_4},
+static const uint8_t *const layer_numbers[] = {
+    [BASE]    = gfx_0,
+    [SYM]     = gfx_1,
+    [NAV]     = gfx_2,
+    [GAME]    = gfx_3,
+    [SETTING] = gfx_4,
 };
 // clang-format on
+_Static_assert(ARRAY_SIZE(layer_numbers) == LAYER_COUNT,
+               "layer_numbers needs an entry for every layer");
 
-static const char *windows = "Win";
-static const char *macos   = "Mac";
-static const char *boot    = "Boot";
+static const char *boot = "Boot";
 
 static painter_font_handle_t Retron27;
 
@@ -272,11 +271,11 @@ static void draw_layer(uint8_t layer, uint16_t name_y) {
 
     clear_text_row(name_y);
 
-    if (layer < ARRAY_SIZE(layer_display)) {
-        number = layer_display[layer].number;
+    if (layer < LAYER_COUNT) {
+        number = layer_numbers[layer];
         color  = layer_colors[layer];
-        qp_drawtext_recolor(lcd_surface, 5, name_y, Retron27,
-                            layer_display[layer].name, HSV_CAPS_ON, HSV_BLACK);
+        qp_drawtext_recolor(lcd_surface, 5, name_y, Retron27, layer_name(layer),
+                            HSV_CAPS_ON, HSV_BLACK);
     }
 
     painter_image_handle_t image = qp_load_image_mem(number);
@@ -333,21 +332,18 @@ bool display_module_housekeeping_task_user(const bool second_display) {
             last_layer = layer;
         }
 
-        // Host selected with XP_MODE. That state lives on the master half, so
-        // only the master's display shows it.
-        if (is_keyboard_master()) {
-            static bool host_drawn      = false;
-            static bool last_host_macos = false;
-            const bool  host_macos      = xp_is_macos();
+        // Host selected with XP_MODE. The cross_platform module keeps both
+        // halves in sync, so whichever half shows this screen can show it.
+        static bool      host_drawn = false;
+        static xp_host_t last_host  = XP_HOST_MACOS;
+        const xp_host_t  host       = xp_host();
 
-            if (!host_drawn || host_macos != last_host_macos) {
-                clear_text_row(host_y);
-                qp_drawtext_recolor(lcd_surface, 5, host_y, Retron27,
-                                    host_macos ? macos : windows, HSV_CAPS_ON,
-                                    HSV_BLACK);
-                last_host_macos = host_macos;
-                host_drawn      = true;
-            }
+        if (!host_drawn || host != last_host) {
+            clear_text_row(host_y);
+            qp_drawtext_recolor(lcd_surface, 5, host_y, Retron27,
+                                xp_host_name(host), HSV_CAPS_ON, HSV_BLACK);
+            last_host  = host;
+            host_drawn = true;
         }
 
         // RGB readout on the setting layer. Rows are cleared before redrawing
