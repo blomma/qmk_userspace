@@ -70,23 +70,25 @@ static void write_value(uint8_t line, const char *label, uint8_t value) {
     oled_write_ln(get_u8_str(value, ' '), false);
 }
 
-// Everything is redrawn on every pass. The OLED driver only marks the parts of
-// the screen that actually changed as dirty, so an unchanged screen costs no
-// I2C traffic. The screen is only cleared on a layer change, since a clear
-// marks the whole screen dirty.
+// The text is redrawn on every pass. The OLED driver only marks the parts of
+// the screen that actually changed as dirty, so unchanged text costs no I2C
+// traffic. The clear and the logo are only drawn on a layer change: a clear
+// marks the whole screen dirty, and a logo is a full screen image that is
+// blank where the text goes, so drawing it on every pass would wipe the text
+// and send those lines again.
 static void render_layer_screen(void) {
     static uint8_t last_layer = UINT8_MAX;
     const uint8_t  layer = get_highest_layer(layer_state | default_layer_state);
 
     if (layer != last_layer) {
         oled_clear();
+        if (layer < LAYER_COUNT && layer_logos[layer] != NULL) {
+            oled_write_raw_P(layer_logos[layer], OLED_MATRIX_SIZE);
+        }
         last_layer = layer;
     }
 
     if (layer < LAYER_COUNT) {
-        if (layer_logos[layer] != NULL) {
-            oled_write_raw_P(layer_logos[layer], OLED_MATRIX_SIZE);
-        }
         write_centered(LAYER_NAME_LINE, layer_name(layer));
     } else {
         write_centered(LAYER_NAME_LINE, "?");
