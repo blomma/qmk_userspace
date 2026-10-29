@@ -6,6 +6,12 @@
 
 #define RGB_MATRIX_TIMEOUT 180000
 
+// Each half only sees its own key presses, so without this the half not
+// plugged into USB runs its timeouts (RGB matrix, Halcyon display and
+// backlight) on its own and turns off while you type on the other half. The
+// half plugged into USB now sends its activity to the other half.
+#define SPLIT_ACTIVITY_ENABLE
+
 // Enable rapid switch from tap to hold, disables double tap hold auto-repeat.
 #define QUICK_TAP_TERM 0
 
