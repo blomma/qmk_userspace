@@ -6,7 +6,7 @@
 
 // All values (including hue) are scaled to 0-255
 #define HSV_CAPS_ON 17, 191, 245
-#define HSV_LAYER_0 0, 0, 160
+#define HSV_LAYER_0 0, 0, 255
 #define HSV_LAYER_1 23, 89, 255
 #define HSV_LAYER_2 43, 71, 255
 #define HSV_LAYER_3 0, 82, 255

@@ -14,10 +14,10 @@
 #include "../../../../../../users/halcyon_modules/splitkb/hlc_tft_display/graphics/numbers/4.qgf.h"
 #include "../../../../../../users/halcyon_modules/splitkb/hlc_tft_display/graphics/numbers/undef.qgf.h"
 
-static const char *base    = "Base    ";
-static const char *sym     = "Sym     ";
-static const char *nav     = "Nav     ";
-static const char *game    = "Game    ";
+static const char *base    = "Base";
+static const char *sym     = "Sym";
+static const char *nav     = "Nav";
+static const char *game    = "Game";
 static const char *setting = "Setting";
 
 static painter_font_handle_t  Retron27;
@@ -93,59 +93,31 @@ void init_game_of_life_grid(void) {
  * Moving this to a helper allows the draw loop to calculate color ONCE per
  * frame instead of per-cell.
  */
-static void get_hsv_color(int index, uint8_t *h, uint8_t *s, uint8_t *v) {
+static hsv_t get_hsv_color(int index) {
     switch (index) {
         case 0:
-            *h = 0;
-            *s = 0;
-            *v = 160;
-            break; // HSV_LAYER_0
+            return (hsv_t){HSV_LAYER_0};
         case 1:
-            *h = 23;
-            *s = 89;
-            *v = 255;
-            break; // HSV_LAYER_1
+            return (hsv_t){HSV_LAYER_1};
         case 2:
-            *h = 43;
-            *s = 71;
-            *v = 255;
-            break; // HSV_LAYER_2
+            return (hsv_t){HSV_LAYER_2};
         case 3:
-            *h = 0;
-            *s = 82;
-            *v = 255;
-            break; // HSV_LAYER_3
+            return (hsv_t){HSV_LAYER_3};
         case 4:
-            *h = 77;
-            *s = 64;
-            *v = 255;
-            break; // HSV_LAYER_4
+            return (hsv_t){HSV_LAYER_4};
         case 5:
-            *h = 176;
-            *s = 77;
-            *v = 255;
-            break; // HSV_LAYER_5
+            return (hsv_t){HSV_LAYER_5};
         case 6:
-            *h = 131;
-            *s = 99;
-            *v = 255;
-            break; // HSV_LAYER_6
+            return (hsv_t){HSV_LAYER_6};
         case 7:
-            *h = 154;
-            *s = 94;
-            *v = 255;
-            break; // HSV_LAYER_7
+            return (hsv_t){HSV_LAYER_7};
         default:
-            *h = 0;
-            *s = 255;
-            *v = 255;
-            break; // HSV_LAYER_UNDEF
+            return (hsv_t){HSV_LAYER_UNDEF};
     }
 }
 
 void draw_game_of_life_grid(void) {
-    uint8_t h, s, v;
-    get_hsv_color(cell_color_value, &h, &s, &v);
+    const hsv_t color = get_hsv_color(cell_color_value);
 
     for (int y = 0; y < GRID_HEIGHT; y++) {
         uint32_t changed = changed_grid[y];
@@ -173,7 +145,8 @@ void draw_game_of_life_grid(void) {
                             true);
                     qp_rect(lcd_surface, left + OUTLINE_SIZE,
                             top + OUTLINE_SIZE, right - OUTLINE_SIZE,
-                            bottom - OUTLINE_SIZE, h, s, v, true);
+                            bottom - OUTLINE_SIZE, color.h, color.s, color.v,
+                            true);
                 } else {
                     // Cell became DEAD:
                     // Just draw the black background to "erase" the previous
@@ -270,6 +243,12 @@ void add_cell_cluster_to_game_of_life_grid(void) {
     }
 }
 
+// Blanks one full-width line of text starting at y
+static void clear_text_row(uint16_t y) {
+    qp_rect(lcd_surface, 0, y, LCD_WIDTH - 1, y + Retron27->line_height - 1,
+            HSV_BLACK, true);
+}
+
 bool display_module_housekeeping_task_user(const bool second_display) {
     if (second_display) {
         static uint32_t last_draw                     = 0;
@@ -303,26 +282,22 @@ bool display_module_housekeeping_task_user(const bool second_display) {
             Retron27 = qp_load_font_mem(font_Retron2000_27);
         }
 
-        if (get_highest_layer(layer_state | default_layer_state) == 4) {
-            snprintf(buf, sizeof(buf), "%i,%i", rgb_matrix_get_mode(),
-                     rgb_matrix_get_val());
-            qp_drawtext_recolor(lcd_surface, 5,
-                                LCD_HEIGHT - Retron27->line_height * 2 - 10,
-                                Retron27, buf, HSV_CAPS_ON, HSV_BLACK);
-            snprintf(buf, sizeof(buf), "%i", rgb_matrix_get_speed());
-            qp_drawtext_recolor(lcd_surface, 5,
-                                LCD_HEIGHT - Retron27->line_height - 5,
-                                Retron27, buf, HSV_CAPS_ON, HSV_BLACK);
-        }
+        const uint16_t layer_name_y = LCD_HEIGHT - Retron27->line_height * 3 - 10;
+        const uint16_t rgb_mode_y   = LCD_HEIGHT - Retron27->line_height * 2 - 10;
+        const uint16_t rgb_speed_y  = LCD_HEIGHT - Retron27->line_height - 5;
 
+        // Only the layer name row is cleared, not the whole surface: a full
+        // clear marks every pixel dirty and pushes the entire framebuffer over
+        // SPI on each layer change. The layer number images share one size and
+        // are drawn with a black background, so they overwrite each other.
         if (previous_layer_state != layer_state || first_run_layer == false) {
-            qp_clear(lcd_surface);
+            clear_text_row(layer_name_y);
 
             switch (get_highest_layer(layer_state | default_layer_state)) {
                 case 0:
                     qp_drawtext_recolor(
                         lcd_surface, 5,
-                        LCD_HEIGHT - Retron27->line_height * 3 - 10, Retron27,
+                        layer_name_y, Retron27,
                         base, HSV_CAPS_ON, HSV_BLACK);
                     layer_number = qp_load_image_mem(gfx_0);
                     qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
@@ -331,7 +306,7 @@ bool display_module_housekeeping_task_user(const bool second_display) {
                 case 1:
                     qp_drawtext_recolor(
                         lcd_surface, 5,
-                        LCD_HEIGHT - Retron27->line_height * 3 - 10, Retron27,
+                        layer_name_y, Retron27,
                         sym, HSV_CAPS_ON, HSV_BLACK);
                     layer_number = qp_load_image_mem(gfx_1);
                     qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
@@ -340,7 +315,7 @@ bool display_module_housekeeping_task_user(const bool second_display) {
                 case 2:
                     qp_drawtext_recolor(
                         lcd_surface, 5,
-                        LCD_HEIGHT - Retron27->line_height * 3 - 10, Retron27,
+                        layer_name_y, Retron27,
                         nav, HSV_CAPS_ON, HSV_BLACK);
                     layer_number = qp_load_image_mem(gfx_2);
                     qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
@@ -349,7 +324,7 @@ bool display_module_housekeeping_task_user(const bool second_display) {
                 case 3:
                     qp_drawtext_recolor(
                         lcd_surface, 5,
-                        LCD_HEIGHT - Retron27->line_height * 3 - 10, Retron27,
+                        layer_name_y, Retron27,
                         game, HSV_CAPS_ON, HSV_BLACK);
                     layer_number = qp_load_image_mem(gfx_3);
                     qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
@@ -358,7 +333,7 @@ bool display_module_housekeeping_task_user(const bool second_display) {
                 case 4:
                     qp_drawtext_recolor(
                         lcd_surface, 5,
-                        LCD_HEIGHT - Retron27->line_height * 3 - 10, Retron27,
+                        layer_name_y, Retron27,
                         setting, HSV_CAPS_ON, HSV_BLACK);
                     layer_number = qp_load_image_mem(gfx_4);
                     qp_drawimage_recolor(lcd_surface, 5, 5, layer_number,
@@ -373,6 +348,44 @@ bool display_module_housekeeping_task_user(const bool second_display) {
             qp_close_image(layer_number);
             previous_layer_state = layer_state;
             first_run_layer      = true;
+        }
+
+        // RGB readout on the setting layer. Rows are cleared before redrawing
+        // so a shorter value doesn't leave digits from the previous one behind,
+        // and they are only redrawn when a value actually changes.
+        static bool    rgb_info_drawn = false;
+        static uint8_t last_rgb_mode  = 0;
+        static uint8_t last_rgb_val   = 0;
+        static uint8_t last_rgb_speed = 0;
+
+        if (get_highest_layer(layer_state | default_layer_state) == 4) {
+            const uint8_t mode  = rgb_matrix_get_mode();
+            const uint8_t val   = rgb_matrix_get_val();
+            const uint8_t speed = rgb_matrix_get_speed();
+
+            if (!rgb_info_drawn || mode != last_rgb_mode ||
+                val != last_rgb_val) {
+                clear_text_row(rgb_mode_y);
+                snprintf(buf, sizeof(buf), "%u,%u", mode, val);
+                qp_drawtext_recolor(lcd_surface, 5, rgb_mode_y, Retron27, buf,
+                                    HSV_CAPS_ON, HSV_BLACK);
+            }
+
+            if (!rgb_info_drawn || speed != last_rgb_speed) {
+                clear_text_row(rgb_speed_y);
+                snprintf(buf, sizeof(buf), "%u", speed);
+                qp_drawtext_recolor(lcd_surface, 5, rgb_speed_y, Retron27, buf,
+                                    HSV_CAPS_ON, HSV_BLACK);
+            }
+
+            last_rgb_mode  = mode;
+            last_rgb_val   = val;
+            last_rgb_speed = speed;
+            rgb_info_drawn = true;
+        } else if (rgb_info_drawn) {
+            clear_text_row(rgb_mode_y);
+            clear_text_row(rgb_speed_y);
+            rgb_info_drawn = false;
         }
     }
 
