@@ -1,4 +1,0 @@
-#define SE_LCBR_MAC S(ALGR(KC_8))
-#define SE_RCBR_MAC S(ALGR(KC_9))
-#define SE_BSLS_MAC S(ALGR(KC_7))
-#define SE_LESS_MAC KC_GRV

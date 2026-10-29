@@ -1,6 +1,6 @@
 #include QMK_KEYBOARD_H
-#include "i18n.h"
 #include "keymap_swedish.h"
+#include "cross_platform.h"
 
 enum layers {
     BASE = 0,
@@ -21,7 +21,7 @@ enum {
 
 // Tap Dance definitions
 tap_dance_action_t tap_dance_actions[] = {
-    [TD_LCBR_RCBR]  = ACTION_TAP_DANCE_DOUBLE(SE_LCBR, SE_RCBR),
+    [TD_LCBR_RCBR]  = ACTION_TAP_DANCE_XP_DOUBLE(XP_LCBR, XP_RCBR),
     [TD_LPR_RPR]    = ACTION_TAP_DANCE_DOUBLE(SE_LPRN, SE_RPRN),
     [TD_LBRC_RBRC]  = ACTION_TAP_DANCE_DOUBLE(SE_LBRC, SE_RBRC),
     [TD_COMMA_LESS] = ACTION_TAP_DANCE_DOUBLE(SE_COMM, SE_LABK),
@@ -58,23 +58,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                           TD(TD_LCBR_RCBR) , TD(TD_LPR_RPR) , TD(TD_LBRC_RBRC) , LT(SYM, KC_SPACE) , KC_TRNS     ,     KC_TRNS  , KC_ENTER , TD(TD_COMMA_LESS) , TD(TD_DOT_GRTR) , KC_TRNS
 ),
 
-//    ┌─────┬─────┬─────┬─────┬─────┬─────┐                           ┌─────┬─────┬─────┬─────────┬─────────┬─────┐
-//    │     │     │     │     │     │     │                           │     │     │     │         │         │     │
-//    ├─────┼─────┼─────┼─────┼─────┼─────┤                           ├─────┼─────┼─────┼─────────┼─────────┼─────┤
-//    │     │     │     │     │     │     │                           │  +  │  {  │  }  │    ´    │    \    │     │
-//    ├─────┼─────┼─────┼─────┼─────┼─────┤                           ├─────┼─────┼─────┼─────────┼─────────┼─────┤
-//    │     │     │     │     │     │     │                           │  ~  │  (  │  )  │    ^    │  <_MAC  │     │
-//    ├─────┼─────┼─────┼─────┼─────┼─────┼─────┬─────┐   ┌─────┬─────┼─────┼─────┼─────┼─────────┼─────────┼─────┤
-//    │     │     │     │     │     │     │     │     │   │     │     │  -  │  [  │  ]  │ SE_QUOT │ SE_PIPE │     │
-//    └─────┴─────┴─────┼─────┼─────┼─────┼─────┼─────┤   ├─────┼─────┼─────┼─────┼─────┼─────────┴─────────┴─────┘
-//                      │     │     │     │     │     │   │     │     │     │     │     │
-//                      └─────┴─────┴─────┴─────┴─────┘   └─────┴─────┴─────┴─────┴─────┘
+//    ┌─────┬─────┬─────┬─────┬─────┬─────┐                           ┌─────┬─────────┬─────────┬─────────┬─────────┬─────┐
+//    │     │     │     │     │     │     │                           │     │         │         │         │         │     │
+//    ├─────┼─────┼─────┼─────┼─────┼─────┤                           ├─────┼─────────┼─────────┼─────────┼─────────┼─────┤
+//    │     │     │     │     │     │     │                           │  +  │ XP_LCBR │ XP_RCBR │    ´    │ XP_BSLS │     │
+//    ├─────┼─────┼─────┼─────┼─────┼─────┤                           ├─────┼─────────┼─────────┼─────────┼─────────┼─────┤
+//    │     │     │     │     │     │     │                           │  ~  │    (    │    )    │    ^    │ SE_LABK │     │
+//    ├─────┼─────┼─────┼─────┼─────┼─────┼─────┬─────┐   ┌─────┬─────┼─────┼─────────┼─────────┼─────────┼─────────┼─────┤
+//    │     │     │     │     │     │     │     │     │   │     │     │  -  │    [    │    ]    │ SE_QUOT │ XP_PIPE │     │
+//    └─────┴─────┴─────┼─────┼─────┼─────┼─────┼─────┤   ├─────┼─────┼─────┼─────────┼─────────┼─────────┴─────────┴─────┘
+//                      │     │     │     │     │     │   │     │     │     │         │         │
+//                      └─────┴─────┴─────┴─────┴─────┘   └─────┴─────┴─────┴─────────┴─────────┘
 [SYM] = LAYOUT(
-  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             KC_TRNS , KC_TRNS     , KC_TRNS     , KC_TRNS , KC_TRNS     , KC_TRNS,
-  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             SE_PLUS , SE_LCBR_MAC , SE_RCBR_MAC , SE_ACUT , SE_BSLS     , KC_TRNS,
-  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             SE_TILD , SE_LPRN     , SE_RPRN     , SE_CIRC , SE_LESS_MAC , KC_TRNS,
-  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , SE_MINS , SE_LBRC     , SE_RBRC     , SE_QUOT , SE_PIPE     , KC_TRNS,
-                                KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS     , KC_TRNS
+  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS,
+  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             SE_PLUS , XP_LCBR , XP_RCBR , SE_ACUT , XP_BSLS , KC_TRNS,
+  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             SE_TILD , SE_LPRN , SE_RPRN , SE_CIRC , SE_LABK , KC_TRNS,
+  KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , SE_MINS , SE_LBRC , SE_RBRC , SE_QUOT , XP_PIPE , KC_TRNS,
+                                KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS
 ),
 
 //    ┌─────┬─────┬─────┬─────┬─────┬─────┐                           ┌──────┬──────┬─────────┬──────┬─────┬─────┐
@@ -116,7 +116,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 ),
 
 //    ┌─────────────────────────────┬─────────────────────────┬─────┬─────┬─────┬─────┐                           ┌─────┬─────┬─────┬─────┬─────┬─────┐
-//    │           QK_BOOT           │                         │     │     │     │     │                           │     │     │     │     │     │     │
+//    │           QK_BOOT           │         XP_MODE         │     │     │     │     │                           │     │     │     │     │     │     │
 //    ├─────────────────────────────┼─────────────────────────┼─────┼─────┼─────┼─────┤                           ├─────┼─────┼─────┼─────┼─────┼─────┤
 //    │ QK_RGB_MATRIX_MODE_PREVIOUS │ QK_RGB_MATRIX_MODE_NEXT │     │     │     │     │                           │     │     │     │     │     │     │
 //    ├─────────────────────────────┼─────────────────────────┼─────┼─────┼─────┼─────┤                           ├─────┼─────┼─────┼─────┼─────┼─────┤
@@ -127,7 +127,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //                                                                  │     │     │     │     │     │   │     │     │     │     │     │
 //                                                                  └─────┴─────┴─────┴─────┴─────┘   └─────┴─────┴─────┴─────┴─────┘
 [SETTING] = LAYOUT(
-  QK_BOOT                     , KC_TRNS                 , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS,
+  QK_BOOT                     , XP_MODE                 , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS,
   QK_RGB_MATRIX_MODE_PREVIOUS , QK_RGB_MATRIX_MODE_NEXT , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS,
   QK_RGB_MATRIX_VALUE_DOWN    , QK_RGB_MATRIX_VALUE_UP  , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,                                             KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS,
   QK_RGB_MATRIX_SPEED_DOWN    , QK_RGB_MATRIX_SPEED_UP  , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS ,     KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS , KC_TRNS,
@@ -136,3 +136,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 // clang-format on
+
+void keyboard_post_init_user(void) {
+    cross_platform_init();
+}
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    return process_record_cross_platform(keycode, record);
+}

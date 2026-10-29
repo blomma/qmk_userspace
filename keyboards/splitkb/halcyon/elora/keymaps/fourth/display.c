@@ -2,6 +2,7 @@
 #include "qp_surface.h"
 #include "hardware/structs/rosc.h"
 #include "display.h"
+#include "cross_platform.h"
 
 // Fonts mono2
 #include "../../../../../../users/halcyon_modules/splitkb/hlc_tft_display/graphics/fonts/Retron2000-27.qff.h"
@@ -19,6 +20,9 @@ static const char *sym     = "Sym";
 static const char *nav     = "Nav";
 static const char *game    = "Game";
 static const char *setting = "Setting";
+
+static const char *windows = "Win";
+static const char *macos   = "Mac";
 
 static painter_font_handle_t  Retron27;
 static painter_image_handle_t layer_number;
@@ -287,9 +291,13 @@ bool display_module_housekeeping_task_user(const bool second_display) {
             Retron27 = qp_load_font_mem(font_Retron2000_27);
         }
 
-        const uint16_t layer_name_y = LCD_HEIGHT - Retron27->line_height * 3 - 10;
-        const uint16_t rgb_mode_y   = LCD_HEIGHT - Retron27->line_height * 2 - 10;
-        const uint16_t rgb_speed_y  = LCD_HEIGHT - Retron27->line_height - 5;
+        // Text rows stacked up from the bottom edge: the host on the bottom
+        // row, the RGB readout above it and the layer name on top, just under
+        // the layer number image.
+        const uint16_t host_y       = LCD_HEIGHT - Retron27->line_height - 5;
+        const uint16_t rgb_speed_y  = host_y - Retron27->line_height;
+        const uint16_t rgb_mode_y   = rgb_speed_y - Retron27->line_height;
+        const uint16_t layer_name_y = rgb_mode_y - Retron27->line_height;
 
         // Only the layer name row is cleared, not the whole surface: a full
         // clear marks every pixel dirty and pushes the entire framebuffer over
@@ -353,6 +361,23 @@ bool display_module_housekeeping_task_user(const bool second_display) {
             qp_close_image(layer_number);
             previous_layer_state = layer_state;
             first_run_layer      = true;
+        }
+
+        // Host selected with XP_MODE. That state lives on the master half, so
+        // only the master's display shows it.
+        if (is_keyboard_master()) {
+            static bool host_drawn      = false;
+            static bool last_host_macos = false;
+            const bool  host_macos      = xp_is_macos();
+
+            if (!host_drawn || host_macos != last_host_macos) {
+                clear_text_row(host_y);
+                qp_drawtext_recolor(lcd_surface, 5, host_y, Retron27,
+                                    host_macos ? macos : windows, HSV_CAPS_ON,
+                                    HSV_BLACK);
+                last_host_macos = host_macos;
+                host_drawn      = true;
+            }
         }
 
         // RGB readout on the setting layer. Rows are cleared before redrawing

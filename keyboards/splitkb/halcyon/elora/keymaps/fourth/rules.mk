@@ -1,5 +1,6 @@
 SRC += display.c
 SRC += rgb.c
+SRC += cross_platform.c
 
 ENCODER_MAP_ENABLE = no
 
