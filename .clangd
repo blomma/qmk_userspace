@@ -2,3 +2,12 @@ CompileFlags:
   Add: [-Wno-unknown-attributes, -Wno-maybe-uninitialized, -Wno-unknown-warning-option]
   Remove: [-W*, -mmcu=*, -mcpu=*, -mfpu=*, -mfloat-abi=*, -mno-unaligned-access, -mno-thumb-interwork, -mcall-prologues, -D__has_include*]
   Compiler: clang
+---
+# The build passes every config.h to the compiler with -include. When clangd
+# opens a config.h it borrows those flags from a source file, reads the header
+# once through -include and once more as the open file, and reports its own
+# defines as redefined. Drop the -include flags for these headers.
+If:
+  PathMatch: .*/(post_)?config\.h
+CompileFlags:
+  Remove: [-include]

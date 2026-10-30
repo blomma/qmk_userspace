@@ -1,3 +1,7 @@
+#pragma once
+
+#include "progmem.h"
+
 #define ANIM_FRAMES 16
 #define GROW_RATE 50
 
