@@ -17,7 +17,12 @@ SETTING layer) and copying the `.uf2` file onto the `RPI-RP2` drive.
 The half plugged into USB shows a plant that grows as you type. The other half
 shows the current layer and the host selected with `XP_MODE` (`Win` or `Mac`).
 On the SETTING layer it also shows the RGB mode (`MM`), brightness (`MV`) and
-speed (`MS`).
+speed (`MS`). The layer name is stacked a capital letter per row down the left
+side, in the same large Retron2000 font as on the Halcyon displays. A name too
+long to stack in it, such as SETTING, uses the small font at twice the size.
+
+The large font lives in `big_font.h`, generated from the Halcyon font by
+`make_font.py`. Run `python3 make_font.py` in this directory to regenerate it.
 
 Pressing `QK_BOOT` replaces the plant with `Boot`, which stays on the display
 while the keyboard is in the bootloader.
