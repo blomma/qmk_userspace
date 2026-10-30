@@ -1,7 +1,7 @@
 #include QMK_KEYBOARD_H
 #include "keymap_swedish.h"
-#include "display.h"
 #include "layers.h"
+#include "plant.h"
 #include "tap_dances.h"
 
 // The XP_ keycodes come from the fourth/cross_platform module, the TD_ tap
@@ -120,7 +120,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // process_record_user
 bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (record->event.pressed) {
-        display_count_keypress();
+        plant_count_keypress();
     }
 
     return true;

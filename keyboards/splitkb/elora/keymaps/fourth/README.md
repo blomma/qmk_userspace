@@ -14,12 +14,25 @@ SETTING layer) and copying the `.uf2` file onto the `RPI-RP2` drive.
 
 ## Displays
 
-The half plugged into USB shows a plant that grows as you type. The other half
-shows the current layer and the host selected with `XP_MODE` (`Win` or `Mac`).
-On the SETTING layer it also shows the RGB mode (`MM`), brightness (`MV`) and
-speed (`MS`). The layer name is stacked a capital letter per row down the left
-side, in the same large Retron2000 font as on the Halcyon displays. A name too
-long to stack in it, such as SETTING, uses the small font at twice the size.
+The half plugged into USB shows a sunflower in a geometric style, drawn as it
+animates rather than from premade frames (`plant.c`): a sunburst head,
+half-moon leaves and symmetric roots. Over 800 key presses it grows from a
+seed: roots, stem and leaves, then a bud that opens into the sunburst. Then
+the spikes drop off, the plant sinks back into the ground and a new seed
+starts over. It sways in the wind and every key press gives it a nudge, while
+the sun's rays slowly turn.
+
+Sending a change turns the display on and pushes its timeout back, so a plant
+that never stops moving would keep the display on for good. Once the keyboard
+has been idle for `OLED_TIMEOUT`, the plant stops and turns the display off
+itself.
+
+The other half shows the current layer and the host selected with `XP_MODE`
+(`Win` or `Mac`). On the SETTING layer it also shows the RGB mode (`MM`),
+brightness (`MV`) and speed (`MS`). The layer name is stacked a capital letter
+per row down the left side, in the same large Retron2000 font as on the
+Halcyon displays. A name too long to stack in it, such as SETTING, uses the
+small font at twice the size.
 
 The large font lives in `big_font.h`, generated from the Halcyon font by
 `make_font.py`. Run `python3 make_font.py` in this directory to regenerate it.

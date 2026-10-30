@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "cross_platform.h"
-#include "display.h"
-#include "frames.h"
 #include "big_font.h"
+#include "canvas.h"
 #include "layers.h"
+#include "plant.h"
 
 // The 6x8 font the OLED driver writes text with. The driver keeps its copy to
 // itself, so the layer screen includes its own to draw text at any pixel.
@@ -14,16 +14,6 @@
 
 // The half plugged into USB shows a plant that grows as you type, the other
 // half shows the layer screen.
-
-// Frames are written straight into the OLED buffer
-_Static_assert(sizeof(plant_anim[0]) == OLED_MATRIX_SIZE, "frame size");
-
-// The display stands on its side, so the screen is as wide as the panel is
-// tall
-#define SCREEN_WIDTH OLED_DISPLAY_HEIGHT
-#define SCREEN_HEIGHT OLED_DISPLAY_WIDTH
-_Static_assert((SCREEN_WIDTH * SCREEN_HEIGHT) / 8 == OLED_MATRIX_SIZE,
-               "the screen covers the whole OLED buffer");
 
 // The layer name is stacked a letter per row in a column down the left side,
 // centred on STACK_X. Every name starts STACK_MARGIN pixels from the top and
@@ -51,17 +41,6 @@ _Static_assert(RGB_TOP + (RGB_LINES - 1) * RGB_LINE_PITCH + OLED_FONT_HEIGHT <=
 
 static const char *boot = "Boot";
 
-static uint8_t current_frame = 0;
-
-void display_count_keypress(void) {
-    static uint8_t keypresses = 0;
-
-    if (++keypresses == GROW_RATE) {
-        keypresses    = 0;
-        current_frame = (current_frame + 1) % ANIM_FRAMES;
-    }
-}
-
 // Writes str centred on the given line and blanks the rest of the line
 static void write_centered(uint8_t line, const char *str) {
     const uint8_t width = oled_max_chars();
@@ -74,22 +53,12 @@ static void write_centered(uint8_t line, const char *str) {
     oled_write_ln(str, false);
 }
 
-// The layer screen in the layout of the OLED buffer
-static uint8_t layer_screen[OLED_MATRIX_SIZE];
-
-static void set_pixel(int16_t x, int16_t y) {
-    if (x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT) {
-        return;
-    }
-    layer_screen[x + (y / 8) * SCREEN_WIDTH] |= 1 << (y % 8);
-}
-
 // Lights a column of scale by scale blocks, bit n of bits at block row n
 static void draw_column(int16_t x, int16_t top, uint32_t bits, uint8_t scale) {
     for (int16_t y = top; bits != 0; y += scale, bits >>= 1) {
         if (bits & 1) {
             for (uint8_t i = 0; i < scale * scale; i++) {
-                set_pixel(x + i % scale, y + i / scale);
+                canvas_set_pixel(x + i % scale, y + i / scale, true);
             }
         }
     }
@@ -233,13 +202,10 @@ static void draw_stacked(const char *name) {
     }
 }
 
-// The screen is drawn from scratch on every pass, then copied into the OLED
-// buffer. The copy only marks the bytes that actually changed as dirty, so
-// an unchanged screen costs no I2C traffic.
 static void render_layer_screen(void) {
     const uint8_t layer = get_highest_layer(layer_state | default_layer_state);
 
-    memset(layer_screen, 0, sizeof(layer_screen));
+    canvas_clear();
 
     draw_stacked(layer < LAYER_COUNT ? layer_name(layer) : "?");
 
@@ -259,13 +225,12 @@ static void render_layer_screen(void) {
     draw_text(SCREEN_WIDTH - TEXT_MARGIN - strlen(host) * OLED_FONT_WIDTH,
               HOST_TOP, host);
 
-    oled_set_cursor(0, 0);
-    oled_write_raw((const char *)layer_screen, sizeof(layer_screen));
+    canvas_show();
 }
 
 bool oled_task_user(void) {
     if (is_keyboard_master()) {
-        oled_write_raw_P(plant_anim[current_frame], OLED_MATRIX_SIZE);
+        plant_render();
     } else {
         render_layer_screen();
     }

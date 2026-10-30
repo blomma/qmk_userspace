@@ -1,4 +1,4 @@
-SRC += display.c
+SRC += canvas.c display.c plant.c
 
 # The keyboard enables a pointing device for a Myriad joystick card, and its
 # driver looks for a Myriad card at startup. There is no Myriad card, so drop
